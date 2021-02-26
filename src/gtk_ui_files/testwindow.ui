@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.38.0 -->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <object class="GtkWindow" id="login_window">
+    <property name="can-focus">False</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">center</property>
+            <property name="valign">center</property>
+            <property name="margin-left">50</property>
+            <property name="margin-right">50</property>
+            <property name="margin-top">10</property>
+            <property name="margin-bottom">70</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">15</property>
+            <child>
+              <object class="GtkLabel" id="identicon">
+                <property name="width-request">250</property>
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <attributes>
+                  <attribute name="size" value="40000"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Username</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="username">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="has-frame">False</property>
+                <property name="caps-lock-warning">False</property>
+                <property name="placeholder-text" translatable="yes">Name</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Master Password</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="masterpassword">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="visibility">False</property>
+                <property name="has-frame">False</property>
+                <property name="invisible-char">•</property>
+                <property name="shadow-type">etched-out</property>
+                <property name="primary-icon-activatable">False</property>
+                <property name="secondary-icon-activatable">False</property>
+                <property name="primary-icon-sensitive">False</property>
+                <property name="secondary-icon-sensitive">False</property>
+                <property name="placeholder-text" translatable="yes">Password</property>
+                <property name="input-purpose">password</property>
+                <property name="populate-all">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="title" translatable="yes">Masterpassword</property>
+        <property name="subtitle" translatable="yes">your password generator</property>
+      </object>
+    </child>
+  </object>
+  <object class="GtkApplicationWindow" id="password_window">
+    <property name="can-focus">False</property>
+    <property name="decorated">False</property>
+    <property name="show-menubar">False</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="halign">center</property>
+        <property name="valign">center</property>
+        <property name="margin-left">30</property>
+        <property name="margin-right">30</property>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="halign">center</property>
+            <property name="orientation">vertical</property>
+            <property name="homogeneous">True</property>
+            <child>
+              <object class="GtkBox">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">center</property>
+                <property name="valign">end</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkEntry" id="mpw_entry_big">
+                    <property name="width-request">500</property>
+                    <property name="visible">True</property>
+                    <property name="can-focus">True</property>
+                    <property name="margin-bottom">35</property>
+                    <property name="input-purpose">name</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkTreeView" id="site_list">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="reorderable">True</property>
+                <child internal-child="selection">
+                  <object class="GtkTreeSelection">
+                    <property name="mode">none</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

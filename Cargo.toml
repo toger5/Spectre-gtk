@@ -1,0 +1,30 @@
+[package]
+name = "rust-mpw"
+version = "0.1.0"
+authors = ["toger5 <toger5@hotmail.de>"]
+edition = "2018"
+build = "build-aux/build.rs"
+
+[profile.dev]
+rpath = true
+
+[dependencies]
+num = "0.2"
+dirs = "2.0.2"
+num-traits = "0.2"
+num-derive = "0.2"
+pango = "0.7.0"
+
+[dependencies.gtk]
+version = "0.7.0"
+features = ["v3_24"]
+
+[dependencies.libc]
+version = "0.2.5"
+
+[dependencies.gio]
+version = ""
+features = ["v2_44"]
+
+[build-dependencies]
+bindgen = "0.50"
