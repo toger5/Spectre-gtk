@@ -1,0 +1,3 @@
+[submodule "src/spectre/api"]
+	path = src/spectre/api
+	url = git@gitlab.com:spectre.app/api.git
