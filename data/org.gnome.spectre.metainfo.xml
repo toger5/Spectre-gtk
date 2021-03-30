@@ -8,13 +8,19 @@
   <description>
     <p>A password generator.</p>
   </description>
+  <!-- <screenshots>
+    <screenshot type="default">
+      <image>https://gitlab.gnome.org/World/design/contrast/raw/master/data/resources/screenshots/screenshot1.png</image>
+      <caption>Main Window</caption>
+    </screenshot>
+  </screenshots>
   <screenshots>
     <screenshot type="default">
       <image></image>
       <caption>Main Window</caption>
     </screenshot>
-  </screenshots>
-  <url type="homepage">spectre.app</url>
+  </screenshots> -->
+  <url type="homepage">https://spectre.app</url>
 <!--
 Open Age Rating Service
 https://hughsie.github.io/oars/index.html

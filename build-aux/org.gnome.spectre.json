@@ -7,6 +7,13 @@
         "org.freedesktop.Sdk.Extension.rust-stable"
     ],
     "command": "rust-spectre",
+    "finish-args": [
+        "--share=ipc",
+        "--socket=fallback-x11",
+        "--socket=wayland",
+        "--socket=session-bus",
+        "--device=dri"
+    ],
     "build-options": {
         "append-path": "/usr/lib/sdk/rust-stable/bin",
         "build-args": [
@@ -34,7 +41,11 @@
             "name": "rust-spectre",
             "buildsystem": "simple",
             "build-commands": [
-                "cargo install --path ."
+                "cargo install --path .",
+                "install -Dm755 /run/build/rust-spectre/cargo/bin/rust-spectre -t /app/bin/",
+                "install -Dm644 ./data/${FLATPAK_ID}.metainfo.xml -t /app/share/metainfo/",
+                "install -Dm644 ./data/${FLATPAK_ID}.desktop -t /app/share/applications/",
+                "install -Dm644 ./data/${FLATPAK_ID}.svg -t /app/share/icons/hicolor/scalable/apps/"
             ],
             "sources": [
                 {
