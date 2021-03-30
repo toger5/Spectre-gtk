@@ -1,0 +1,22 @@
+# Master Password site export
+#     Export of site names and stored passwords (unless device-private) encrypted with the master key.
+# 
+##
+# Format: 1
+# Date: 2019-08-10T21:16:16Z
+# User Name: test
+# Full Name: test
+# Avatar: 0
+# Key ID: ABF0FCB2D4ADCFC170BC7DB644CBF9CA2155F4B63E876B4BD8715B88EAD72ABB
+# Algorithm: 3
+# Default Type: 17
+# Passwords: PROTECTED
+##
+#
+#               Last     Times  Password                      Login	                     Site	Site
+#               used      used      type                       name	                     name	password
+1970-01-01T00:00:00Z         0  17:3:0                           	                      abc	
+1970-01-01T00:00:00Z         0  17:3:0                           	                 der shit	
+1970-01-01T00:00:00Z         0  17:3:0                           	                  altabox	
+1970-01-01T00:00:00Z         0  17:3:0                           	                 mpwstgug	
+1970-01-01T00:00:00Z         0  17:3:0                           	              sething.org	

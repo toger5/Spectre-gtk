@@ -45,7 +45,7 @@ fn test() {
 
 
     //test Marshal
-    let mut user = mpw::User::create("timo", "abc", mpw::AlgorithmVersionDefault);
+    let mut user = mpw::User::create("name", "abc", mpw::AlgorithmVersionDefault);
     println!("A");
     user.add_site(
         "abc",
@@ -127,7 +127,7 @@ fn test() {
             //here we have the loaded usr
         }
         Err(r) => {
-            println!("Harter fail {}", r);
+            println!("Fail {}", r);
         }
     }
 }

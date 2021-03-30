@@ -1,39 +1,37 @@
 {
-    "app-id": "org.gnome.masterpassword",
+    "app-id": "org.gnome.spectre",
     "runtime": "org.gnome.Platform",
-    "runtime-version": "3.38",
+    "runtime-version": "40",
     "sdk": "org.gnome.Sdk",
     "sdk-extensions": [
         "org.freedesktop.Sdk.Extension.rust-stable"
     ],
-    "command": "rust-mpw",
+    "command": "rust-spectre",
     "build-options": {
         "append-path": "/usr/lib/sdk/rust-stable/bin",
         "build-args": [
             "--share=network"
         ],
         "env": {
-            "CARGO_HOME": "/run/build/rustmpw/cargo",
-            "RUSTFLAGS": "--error-format=short --remap-path-prefix =../",
+            "CARGO_HOME": "/run/build/rust-spectre/cargo",
+            "RUSTFLAGS": "--remap-path-prefix =../",
             "RUST_BACKTRACE": "1"
         }
     },
     "modules": [
         {
-            "name": "libmpw",
-            "buildsystem": "simple",
-            "build-commands": [
-                "install -D libmpw.so /app/lib/libmpw.so"
-            ],
+            "name": "libsodium",
+            "buildsystem": "autotools",
             "sources": [
                 {
-                    "type": "file",
-                    "path": "gui_app/src/masterpassword-c/core/lib/linux/x86_64/libmpw.so"
+                    "type": "archive",
+                    "url": "https://download.libsodium.org/libsodium/releases/libsodium-1.0.18.tar.gz",
+                    "sha256":"6f504490b342a4f8a4c4a02fc9b866cbef8622d5df4e5452b46be121e46636c1"
                 }
             ]
         },
         {
-            "name": "rustmpw",
+            "name": "rust-spectre",
             "buildsystem": "simple",
             "build-commands": [
                 "cargo install --path ."
@@ -41,7 +39,7 @@
             "sources": [
                 {
                     "type": "dir",
-                    "path": "gui_app"
+                    "path": "../"
                 }
             ]
         }

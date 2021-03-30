@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.gnome.spectre</id>
+  <metadata_license>CC0</metadata_license>
+  <project_license>GPL-3.0+</project_license>
+  <name>Spectre Rust Flatpak</name>
+  <summary>Spectre gtk frontend</summary>
+  <description>
+    <p>A password generator.</p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <image></image>
+      <caption>Main Window</caption>
+    </screenshot>
+  </screenshots>
+  <url type="homepage">spectre.app</url>
+<!--
+Open Age Rating Service
+https://hughsie.github.io/oars/index.html
+-->
+  <content_rating type="oars-1.0" />
+  <releases>
+    <release version="0.0.1" date="2020-02-08">
+      <description>
+        <p>First release of the Spectre Rust Flatpak App</p>
+      </description>
+    </release>
+  </releases>
+  <developer_name>Timo</developer_name>
+  <update_contact>@toger5:matrix.org</update_contact>
+
+  <launchable type="desktop-id">org.gnome.spectre.desktop</launchable>
+</component>
