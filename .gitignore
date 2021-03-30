@@ -3,3 +3,4 @@
 target
 .flatpak-builder
 .flatpak-app-dir
+repo/
