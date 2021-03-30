@@ -92,10 +92,9 @@ pub fn master_key(
     };
     unsafe { m_key.as_ref().unwrap().clone() }
 }
-// type Identicon = spectrebind::SpectreIdenticon;
+
 #[repr(u32)]
 #[derive(FromPrimitive)]
-
 pub enum IdenticonColor {
     Unset = spectrebind::SpectreIdenticonColorUnset,
     Red = spectrebind::SpectreIdenticonColorRed,
@@ -124,6 +123,7 @@ impl IdenticonColor {
         }
     }
 }
+
 pub struct Identicon {
     pub leftArm: char,
     pub body: char,
@@ -131,6 +131,7 @@ pub struct Identicon {
     pub accessory: char,
     pub color: IdenticonColor,
 }
+
 impl Identicon {
     pub fn to_string(&self) -> String {
         format!(
@@ -262,7 +263,7 @@ fn c_char_to_char(c: *const ::std::os::raw::c_char) -> char {
             .to_string_lossy()
             .into_owned()
             .pop()
-            .unwrap_or(' ')
+            .unwrap_or('*')
     }
 }
 

@@ -14,7 +14,7 @@ For the flatpak build and installation use:
 To only build the flatpak:
 `./build-aux/flatpak-build.sh`
 _To uninstall_
-`flatpak remove org.gnome.spectre`
+`flatpak remove com.github.spectre`
 
 ### Other requirements
 for Bindgen there needs to be clang installed (and maybe llvm devel packages) see: https://rust-lang.github.io/rust-bindgen/requirements.html

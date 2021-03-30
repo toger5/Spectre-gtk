@@ -1,5 +1,5 @@
 [package]
-name = "rust-spectre"
+name = "spectre-gtk"
 version = "0.1.0"
 authors = ["toger5 <toger5@hotmail.de>"]
 edition = "2018"

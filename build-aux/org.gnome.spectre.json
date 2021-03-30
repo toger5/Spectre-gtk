@@ -1,12 +1,12 @@
 {
-    "app-id": "org.gnome.spectre",
+    "app-id": "com.github.spectre",
     "runtime": "org.gnome.Platform",
     "runtime-version": "40",
     "sdk": "org.gnome.Sdk",
     "sdk-extensions": [
         "org.freedesktop.Sdk.Extension.rust-stable"
     ],
-    "command": "rust-spectre",
+    "command": "spectre-gtk",
     "finish-args": [
         "--share=ipc",
         "--socket=fallback-x11",
@@ -20,7 +20,7 @@
             "--share=network"
         ],
         "env": {
-            "CARGO_HOME": "/run/build/rust-spectre/cargo",
+            "CARGO_HOME": "/run/build/spectre-gtk/cargo",
             "RUSTFLAGS": "--remap-path-prefix =../",
             "RUST_BACKTRACE": "1"
         }
@@ -38,11 +38,11 @@
             ]
         },
         {
-            "name": "rust-spectre",
+            "name": "spectre-gtk",
             "buildsystem": "simple",
             "build-commands": [
                 "cargo install --path .",
-                "install -Dm755 /run/build/rust-spectre/cargo/bin/rust-spectre -t /app/bin/",
+                "install -Dm755 /run/build/spectre-gtk/cargo/bin/spectre-gtk -t /app/bin/",
                 "install -Dm644 ./data/${FLATPAK_ID}.metainfo.xml -t /app/share/metainfo/",
                 "install -Dm644 ./data/${FLATPAK_ID}.desktop -t /app/share/applications/",
                 "install -Dm644 ./data/${FLATPAK_ID}.svg -t /app/share/icons/hicolor/scalable/apps/"

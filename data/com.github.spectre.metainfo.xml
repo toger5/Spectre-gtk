@@ -1,12 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <component type="desktop-application">
-  <id>org.gnome.spectre</id>
+  <id>com.github.spectre</id>
   <metadata_license>CC0</metadata_license>
   <project_license>GPL-3.0+</project_license>
-  <name>Spectre Rust Flatpak</name>
-  <summary>Spectre gtk frontend</summary>
+  <name>Spectre password</name>
+  <summary>GTK frontend for the Spectre password algorithm.</summary>
   <description>
-    <p>A password generator.</p>
+    <p>Reclaim control, delete your passwords</p>
+    <p>Goodbye password managers, hello digital independence.</p>
+    <p>The Gtk frontend for the Spectre algorthm.</p>
+    <p>
+      Spectre is a completely novel approach to digital access control.
+      Rather than trying to keep countless passwords safe in an app, keychain or browser,
+      Spectre holds no passwords at all.
+      When it’s time to log in, Spectre calculates your site’s password for you on‑demand,
+      storing it nowhere, ensuring it can never be unavailable, lost, or stolen.
+      Is that even possible?
+      It is now.
+    </p>
   </description>
   <!-- <screenshots>
     <screenshot type="default">
@@ -20,8 +31,8 @@
       <caption>Main Window</caption>
     </screenshot>
   </screenshots> -->
-  <url type="homepage">https://spectre.app</url>
-<!--
+  <url type="homepage">https://github.com/toger5/Spectre-gtk</url>
+  <!--
 Open Age Rating Service
 https://hughsie.github.io/oars/index.html
 -->
@@ -36,5 +47,5 @@ https://hughsie.github.io/oars/index.html
   <developer_name>Timo</developer_name>
   <update_contact>@toger5:matrix.org</update_contact>
 
-  <launchable type="desktop-id">org.gnome.spectre.desktop</launchable>
+  <launchable type="desktop-id">com.github.spectre.desktop</launchable>
 </component>

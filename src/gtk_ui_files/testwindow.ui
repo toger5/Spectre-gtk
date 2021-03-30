@@ -19,10 +19,11 @@
             <property name="margin-top">10</property>
             <property name="margin-bottom">70</property>
             <property name="orientation">vertical</property>
-            <property name="spacing">30</property>
+            <property name="spacing">15</property>
             <child>
               <object class="GtkLabel" id="identicon">
                 <property name="width-request">250</property>
+                <property name="height-request">100</property>
                 <property name="visible">True</property>
                 <property name="can-focus">False</property>
                 <attributes>
@@ -100,7 +101,7 @@
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
+            <property name="position">0</property>
           </packing>
         </child>
       </object>

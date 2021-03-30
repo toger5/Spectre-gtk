@@ -1,1 +1,1 @@
-flatpak-builder --install repo build-aux/org.gnome.spectre.json --force-clean --user -y
+flatpak-builder --install .flatpak-app-dir build-aux/com.github.spectre.json --force-clean --user -y

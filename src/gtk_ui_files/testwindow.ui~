@@ -141,7 +141,7 @@
                 <property name="valign">end</property>
                 <property name="orientation">vertical</property>
                 <child>
-                  <object class="GtkEntry" id="mpw_entry_big">
+                  <object class="GtkEntry" id="spectre_entry_big">
                     <property name="width-request">500</property>
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
