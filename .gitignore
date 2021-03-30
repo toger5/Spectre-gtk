@@ -1,2 +1,5 @@
 **/*.rs.bk
 .vscode
+target
+.flatpak-builder
+spectre-flatpak-app-dir
