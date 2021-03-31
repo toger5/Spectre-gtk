@@ -19,33 +19,22 @@
       It is now.
     </p>
   </description>
-  <!-- <screenshots>
-    <screenshot type="default">
-      <image>https://gitlab.gnome.org/World/design/contrast/raw/master/data/resources/screenshots/screenshot1.png</image>
-      <caption>Main Window</caption>
-    </screenshot>
-  </screenshots>
   <screenshots>
     <screenshot type="default">
-      <image></image>
-      <caption>Main Window</caption>
+      <image>data/Screenshot_login.png</image>
+      <caption>Login window</caption>
     </screenshot>
-  </screenshots> -->
+  </screenshots>
   <url type="homepage">https://github.com/toger5/Spectre-gtk</url>
-  <!--
-Open Age Rating Service
-https://hughsie.github.io/oars/index.html
--->
   <content_rating type="oars-1.0" />
   <releases>
-    <release version="0.0.1" date="2020-02-08">
+    <release version="0.0.2" date="2021-03-31">
       <description>
-        <p>First release of the Spectre Rust Flatpak App</p>
+        <p>First release of the Spectre Rust Flatpak App. Nothing works but all the important pices are figured out (distribution, binding to the Spectre api repo)</p>
       </description>
     </release>
   </releases>
   <developer_name>Timo</developer_name>
   <update_contact>@toger5:matrix.org</update_contact>
-
   <launchable type="desktop-id">com.github.spectre.desktop</launchable>
 </component>

@@ -11,9 +11,9 @@ use std::ffi::{CStr, CString};
 use std::mem;
 use std::rc::Rc;
 use gio::ApplicationCommandLineExt;
-
 extern crate gio;
 extern crate gtk;
+extern crate gdk;
 extern crate libc;
 
 use gio::prelude::*;
@@ -130,15 +130,30 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         let s_store = site_list_store.clone();
         let windows_clone = windows.clone();
         spectre_entry.connect_activate(move |_| {
-			// change to load file instead of create user
-            *usr.borrow_mut() = Some(spectre::User::create(
-                name.get_text().as_str(),
-                pwd.get_text().as_str(),
-                spectre::AlgorithmVersionDefault,
-			));
-			usr.borrow_mut().as_mut().unwrap().load_sites_from_file();
 
-            *m_k.borrow_mut() = Some(spectre::master_key(
+            let mut path = dirs::config_dir().unwrap();
+            path.push(format!("{}", name.get_text().as_str()));
+            path.set_extension("mpsites");
+
+            // check if user already exists:
+            if path.exists() {
+                *usr.borrow_mut() = spectre::User::authenticate(path, pwd.get_text().as_str().to_string());
+            }else{
+                let u = spectre::User::create(
+                    "Test",
+                    "Testpwd",
+                    spectre::AlgorithmVersionDefault,
+                );
+                *usr.borrow_mut() = Some(spectre::User::create(
+                    name.get_text().as_str(),
+                    pwd.get_text().as_str(),
+                    spectre::AlgorithmVersionDefault,
+                ));
+            }
+			// change to load file instead of create user
+			// usr.borrow_mut().as_mut().unwrap().load_sites_from_file();
+
+            *m_k.borrow_mut() = Some(spectre::user_key(
                 name.get_text().as_str(),
                 pwd.get_text().as_str(),
                 spectre::AlgorithmVersionDefault,
@@ -189,7 +204,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
 		let s_store = site_list_store.clone();
         pwd_entry_big.connect_activate(move |entry| {
             // log_win.hide();
-            pwd_win.hide();
+            
             let m_k = m_k.borrow().expect("NO MASTER KEY GOT DAMMIT");
             let site_name = entry.get_text();
             let pwd = spectre::site_result(
@@ -198,6 +213,19 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                 password_type,
                 spectre::AlgorithmVersionDefault,
             );
+            let atom = gdk::Atom::intern("CLIPBOARD");
+            let clipboard = gtk::Clipboard::get(&atom);
+
+            // pwd_win.get_clipboard(gtk::Atom::intern("GDK_SELECTION_CLIPBOARD"))
+            // .expect("There is no default Clipboard")
+            clipboard.set_text(&pwd);
+            // gtk::Clipboard::get_default(
+			// 	&pwd_win
+			// 	.get_display(),
+            // )
+			println!("pwd for site {} ({:}) saved to clipboard",site_name.as_str(), spectre::c_char_to_string(usr.borrow().unwrap().userName));
+            
+            pwd_win.hide();
             let mut exists = false;
             for s in usr.borrow().unwrap().get_sites() {
                 unsafe {
@@ -208,7 +236,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
             }
 
             if !exists {
-                print!("The site does not exist!!!");
+                println!("The site does not exist!!! -> gets created");
 				//TODO: show popup
 				usr.borrow_mut().as_mut().unwrap().add_site(
 					site_name.as_str(),
@@ -225,13 +253,6 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
 				// reload site list:
 				fill_site_list(&s_store, &usr.borrow().expect("no User while filling site list"))
             }
-            gtk::Clipboard::get_default(
-				&entry
-				.get_display(),
-            )
-            .expect("There is no default Clipboard")
-            .set_text(&pwd);
-			println!("pwd for site {} ({:}) saved to clipboard",site_name.as_str(), spectre::c_char_to_string(usr.borrow().unwrap().userName));
         });
     }
 }

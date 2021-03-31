@@ -4,13 +4,13 @@ use std::ffi::{CStr, CString};
 
 use std::fs::File;
 use std::io::prelude::*;
-use std::path::Path;
+use std::path::PathBuf;
 extern crate num;
 
 pub type SpectreUserKey = spectrebind::SpectreUserKey;
 
 #[repr(u32)]
-#[derive(FromPrimitive)]
+#[derive(FromPrimitive,Clone)]
 pub enum AlgorithmVersion {
     /** V0 did math with chars whose signedness was platform-dependent. */
     V0 = spectrebind::SpectreAlgorithmV0,
@@ -60,13 +60,13 @@ pub fn name_for_format(format: u32) -> String {
 
 pub fn site_result(
     site_name: &str,
-    master_key: SpectreUserKey,
+    user_key: SpectreUserKey,
     result_type: ResultType,
     algorithm_version: AlgorithmVersion,
 ) -> String {
     let site_res = unsafe {
         CStr::from_ptr(spectrebind::spectre_site_result(
-            &master_key,
+            &user_key,
             CString::new(site_name).expect("ugh").as_ptr(),
             result_type as u32,
             CString::new("").expect("ugh").as_ptr(),
@@ -78,15 +78,15 @@ pub fn site_result(
     site_res.to_string_lossy().into_owned()
 }
 
-pub fn master_key(
+pub fn user_key(
     full_name: &str,
-    master_password: &str,
+    user_password: &str,
     algorithm_version: AlgorithmVersion,
 ) -> SpectreUserKey {
     let m_key = unsafe {
         spectrebind::spectre_user_key(
             CString::new(full_name).unwrap().as_ptr(),
-            CString::new(master_password).unwrap().as_ptr(),
+            CString::new(user_password).unwrap().as_ptr(),
             algorithm_version as u32,
         )
     };
@@ -156,11 +156,11 @@ impl From<spectrebind::SpectreIdenticon> for Identicon {
         }
     }
 }
-pub fn identicon(full_name: &str, master_password: &str) -> Identicon {
+pub fn identicon(full_name: &str, user_password: &str) -> Identicon {
     unsafe {
         Identicon::from(spectrebind::spectre_identicon(
             CString::new(full_name).unwrap().as_ptr(),
-            CString::new(master_password).unwrap().as_ptr(),
+            CString::new(user_password).unwrap().as_ptr(),
         ))
     }
 }
@@ -276,51 +276,57 @@ pub type User = spectrebind::SpectreMarshalledUser;
 impl User {
     pub fn create(
         full_name: &str,
-        master_password: &str,
+        user_password: &str,
         algorithm_version: AlgorithmVersion,
     ) -> User {
+        let mut u: User;
         unsafe {
-            *spectrebind::spectre_marshal_user(
+            u = *spectrebind::spectre_marshal_user(
                 CString::new(full_name).unwrap().as_ptr(),
                 spectrebind::spectre_proxy_provider_set_secret(
-                    CString::new(master_password).unwrap().as_ptr(),
+                    CString::new(user_password).unwrap().as_ptr(),
                 ),
-                algorithm_version as u32,
-            )
+                algorithm_version.clone() as u32,
+            );
         }
+        u.keyID = user_key(full_name, user_password, algorithm_version).keyID;
+        u
     }
 
-    pub fn load_sites_from_file(&mut self) {
+    pub fn authenticate(path: PathBuf, secret: String) -> Option<User> {
         // let mut file = File::create(path)?;
-        // self.masterPassword
+        // self.userPassword
         // key provider stuff
-        let masterpwd: String = "mpw_placeholder".to_string();//c_char_to_string("mpw_placeholder");
+        // let secret: String = "mpw_placeholder".to_string(); //c_char_to_string("mpw_placeholder");
                                                             //"mpw_placeholder".to_string(); // c_char_to_string(&"mpw_placeholder");
-                                                               // String::from("123");// unsafe{CStr::from_ptr(self.masterPassword)
-                                                               // .to_string_lossy()
-                                                               // .into_owned()};
-        let mut path = dirs::config_dir().unwrap();
-        path.push(format!("{}", c_char_to_string(self.userName)));
-        path.set_extension("mpsites");
-        match marshal_read_from_file(&path, MarshalFormat::flat, masterpwd) {
+                                                            // String::from("123");// unsafe{CStr::from_ptr(self.userPassword)
+                                                            // .to_string_lossy()
+                                                            // .into_owned()};
+                                                            // let mut path = dirs::config_dir().unwrap();
+                                                            // path.push(format!("{}", c_char_to_string(self.userName)));
+                                                            // path.set_extension("mpsites");
+        match marshal_read_from_file(&path, MarshalFormat::flat, secret) {
             Ok(new_user_with_sites) => {
-                std::mem::swap(self, new_user_with_sites);
+                return Some(*new_user_with_sites);
             }
-            Err(err) => println!("error while loading sites from file: {}", err),
+            Err(err) => {
+                println!("error while loading sites from file: {}", err);
+                None
+            },
         }
-        // self = &mut user_with_s;
     }
 
     pub fn get_sites(&self) -> Vec<*mut Site> {
         let mut sites: Vec<*mut Site> = Vec::new();
         // TODO:
-        // for i in 0..self.sites_count {
-        //     unsafe {
-        //         sites.push(self.sites.wrapping_add(usize::from(i)));
-        //     }
-        // }
+        for i in 0..self.sites_count {
+            unsafe {
+                sites.push(self.sites.wrapping_add(i as usize));
+            }
+        }
         sites
     }
+
     pub fn add_site(
         &mut self,
         site_name: &str,
@@ -365,19 +371,33 @@ fn marshal_write(out_format: MarshalFormat, mut user: User) -> Result<String, St
             std::ptr::null_mut(),
             std::ptr::null_mut(),
         );
-        let worked = spectrebind::spectre_marshal_write(f, &mut marshalFile, &mut user) ;
-        let mut outbuffer: *mut ::std::os::raw::c_char = 0 as *mut ::std::os::raw::c_char;
+        let worked = spectrebind::spectre_marshal_write(f, &mut marshalFile, &mut user);
+        // let mut outbuffer: *mut ::std::os::raw::c_char = 0 as *mut ::std::os::raw::c_char;
         if worked != std::ptr::null() {
-            unsafe { Ok(CStr::from_ptr(outbuffer).to_string_lossy().into_owned()) }
+            unsafe { Ok(CStr::from_ptr(worked).to_string_lossy().into_owned()) }
         } else {
             unsafe { Err(CStr::from_ptr(error.message).to_string_lossy().into_owned()) }
         }
     }
 }
+
+pub fn marshal_read_from_file(
+    path: &std::path::PathBuf,
+    input_format: MarshalFormat,
+    userSecret: String,
+) -> std::io::Result<&mut User> {
+    let mut file = File::open(path)?;
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+    match marshal_read(contents, input_format, userSecret) {
+        Ok(user) => Ok(unsafe { &mut *user }),
+        Err(msg) => Err(std::io::Error::new(std::io::ErrorKind::Other, msg)),
+    }
+}
 fn marshal_read(
     input_text: String,
     input_format: MarshalFormat,
-    masterPassword: String,
+    userSecret: String,
 ) -> Result<*mut User, String> {
     // let mut error = spectrebind::SpectreMarshalError {
     //     type_: spectrebind::SpectreMarshalSuccess,
@@ -393,17 +413,23 @@ fn marshal_read(
     let mut marshalFile = unsafe {
         spectrebind::spectre_marshal_read(
             std::ptr::null_mut(),
-            CString::new(input_text).unwrap().as_ptr(),
+            CString::new(input_text.into_bytes()).unwrap().as_ptr(),
         )
     };
     unsafe {
         if marshalFile.as_ref().unwrap().error.type_ == spectrebind::SpectreMarshalSuccess {
-            Ok(spectrebind::spectre_marshal_auth(
+            let mut usr = spectrebind::spectre_marshal_auth(
                 marshalFile,
                 spectrebind::spectre_proxy_provider_set_secret(
-                    CString::new(masterPassword).unwrap().as_ptr(),
+                    CString::new(userSecret.into_bytes()).unwrap().as_ptr(),
                 ),
-            ))
+            );
+            if usr.is_null() {
+                return Err(CStr::from_ptr(marshalFile.as_ref().unwrap().error.message)
+                .to_string_lossy()
+                .into_owned());
+            }
+            Ok(usr)
         } else {
             Err(CStr::from_ptr(marshalFile.as_ref().unwrap().error.message)
                 .to_string_lossy()
@@ -411,19 +437,7 @@ fn marshal_read(
         }
     }
 }
-pub fn marshal_read_from_file(
-    path: &std::path::PathBuf,
-    input_format: MarshalFormat,
-    masterPassword: String,
-) -> std::io::Result<&mut User> {
-    let mut file = File::open(path)?;
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
-    match marshal_read(contents, input_format, masterPassword) {
-        Ok(user) => Ok(unsafe { &mut *user }),
-        Err(msg) => Err(std::io::Error::new(std::io::ErrorKind::Other, msg)),
-    }
-}
+
 pub fn marshal_write_to_file(out_format: MarshalFormat, mut user: User) -> std::io::Result<()> {
     let mut path = dirs::config_dir().unwrap();
     path.push(format!("{}", c_char_to_string(user.userName)));

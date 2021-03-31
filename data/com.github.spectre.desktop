@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Rust Flatpak Spectre
+Name=Spectre password
 Comment=Rust Flapaked Gtk Spectre application
 Type=Application
 # should be the same as the Cargo project name
