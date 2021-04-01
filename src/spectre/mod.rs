@@ -10,7 +10,7 @@ extern crate num;
 pub type SpectreUserKey = spectrebind::SpectreUserKey;
 
 #[repr(u32)]
-#[derive(FromPrimitive,Clone)]
+#[derive(FromPrimitive, Clone)]
 pub enum AlgorithmVersion {
     /** V0 did math with chars whose signedness was platform-dependent. */
     V0 = spectrebind::SpectreAlgorithmV0,
@@ -293,32 +293,29 @@ impl User {
         u
     }
 
-    pub fn authenticate(path: PathBuf, secret: String) -> Option<User> {
-        // let mut file = File::create(path)?;
-        // self.userPassword
-        // key provider stuff
-        // let secret: String = "mpw_placeholder".to_string(); //c_char_to_string("mpw_placeholder");
-                                                            //"mpw_placeholder".to_string(); // c_char_to_string(&"mpw_placeholder");
-                                                            // String::from("123");// unsafe{CStr::from_ptr(self.userPassword)
-                                                            // .to_string_lossy()
-                                                            // .into_owned()};
-                                                            // let mut path = dirs::config_dir().unwrap();
-                                                            // path.push(format!("{}", c_char_to_string(self.userName)));
-                                                            // path.set_extension("mpsites");
-        match marshal_read_from_file(&path, MarshalFormat::flat, secret) {
-            Ok(new_user_with_sites) => {
-                return Some(*new_user_with_sites);
-            }
-            Err(err) => {
-                println!("error while loading sites from file: {}", err);
-                None
-            },
+    pub fn authenticate(
+        path: &std::path::PathBuf,
+        // input_format: MarshalFormat,
+        userSecret: String,
+    ) -> Result<User, FileMarshalReadError> {
+        let mut file = match File::open(path) {
+            Ok(file) => file,
+            Err(io_err) => return Err(FileMarshalReadError::File(io_err)),
+        };
+        let mut contents = String::new();
+        match file.read_to_string(&mut contents) {
+            Ok(_) => {}
+            Err(io_err) => return Err(FileMarshalReadError::File(io_err)),
+        };
+        // TODO: input format should not be hardcoded
+        match marshal_read_from_string(contents, MarshalFormat::flat, userSecret) {
+            Ok(user) => Ok(unsafe { *user }),
+            Err(marshal_err) => Err(FileMarshalReadError::Marshal(marshal_err)),
         }
     }
 
     pub fn get_sites(&self) -> Vec<*mut Site> {
         let mut sites: Vec<*mut Site> = Vec::new();
-        // TODO:
         for i in 0..self.sites_count {
             unsafe {
                 sites.push(self.sites.wrapping_add(i as usize));
@@ -348,11 +345,7 @@ impl User {
         }
     }
 }
-// Create a new user object ready for marshalling.
-// type Site = spectrebind::SpectreMarshalledSite;
-// Create a new site attached to the given user object, ready for marshalling.
 
-// type MarshalFormat = spectrebind::SpectreMarshalFormat;
 #[repr(u32)]
 pub enum MarshalFormat {
     flat = spectrebind::SpectreFormatFlat,
@@ -380,62 +373,38 @@ fn marshal_write(out_format: MarshalFormat, mut user: User) -> Result<String, St
         }
     }
 }
-
-pub fn marshal_read_from_file(
-    path: &std::path::PathBuf,
-    input_format: MarshalFormat,
-    userSecret: String,
-) -> std::io::Result<&mut User> {
-    let mut file = File::open(path)?;
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)?;
-    match marshal_read(contents, input_format, userSecret) {
-        Ok(user) => Ok(unsafe { &mut *user }),
-        Err(msg) => Err(std::io::Error::new(std::io::ErrorKind::Other, msg)),
-    }
+pub enum FileMarshalReadError {
+    File(std::io::Error),
+    Marshal(spectrebind::SpectreMarshalError),
 }
-fn marshal_read(
+
+fn marshal_read_from_string(
     input_text: String,
     input_format: MarshalFormat,
     userSecret: String,
-) -> Result<*mut User, String> {
-    // let mut error = spectrebind::SpectreMarshalError {
-    //     type_: spectrebind::SpectreMarshalSuccess,
-    //     message: &(0 as ::std::os::raw::c_char),
-    // };
-    // let mut spectrebind::SpectreMarshalledInfo {
-    //     format : SpectreFormatDefault,
-    //     redacted:false,
-    //     algorithm: SpectreAlgorithmCurrent,
-    //     userName: user
-    // }
-    // let mut marshalFile = spectrebind::spectre_marshal_file(std::ptr::null_mut(), std::ptr::null_mut(),std::ptr::null_mut());
+) -> Result<*mut User, spectrebind::SpectreMarshalError> {
     let mut marshalFile = unsafe {
         spectrebind::spectre_marshal_read(
             std::ptr::null_mut(),
             CString::new(input_text.into_bytes()).unwrap().as_ptr(),
         )
     };
+    let mut usr: *mut User;
     unsafe {
-        if marshalFile.as_ref().unwrap().error.type_ == spectrebind::SpectreMarshalSuccess {
-            let mut usr = spectrebind::spectre_marshal_auth(
-                marshalFile,
-                spectrebind::spectre_proxy_provider_set_secret(
-                    CString::new(userSecret.into_bytes()).unwrap().as_ptr(),
-                ),
-            );
-            if usr.is_null() {
-                return Err(CStr::from_ptr(marshalFile.as_ref().unwrap().error.message)
-                .to_string_lossy()
-                .into_owned());
-            }
-            Ok(usr)
-        } else {
-            Err(CStr::from_ptr(marshalFile.as_ref().unwrap().error.message)
-                .to_string_lossy()
-                .into_owned())
+        if marshalFile.as_ref().unwrap().error.type_ != spectrebind::SpectreMarshalSuccess {
+            return Err(marshalFile.as_ref().unwrap().error);
+        }
+        usr = spectrebind::spectre_marshal_auth(
+            marshalFile,
+            spectrebind::spectre_proxy_provider_set_secret(
+                CString::new(userSecret.into_bytes()).unwrap().as_ptr(),
+            ),
+        );
+        if usr.is_null() {
+            return Err(marshalFile.as_ref().unwrap().error);
         }
     }
+    Ok(usr)
 }
 
 pub fn marshal_write_to_file(out_format: MarshalFormat, mut user: User) -> std::io::Result<()> {
@@ -451,6 +420,21 @@ pub fn marshal_write_to_file(out_format: MarshalFormat, mut user: User) -> std::
         Err(msg) => Err(std::io::Error::new(std::io::ErrorKind::Other, msg)),
     }
 }
+
+pub const SpectreMarshalSuccess: spectrebind::SpectreMarshalErrorType =
+    spectrebind::SpectreMarshalSuccess;
+pub const SpectreMarshalErrorStructure: spectrebind::SpectreMarshalErrorType =
+    spectrebind::SpectreMarshalErrorStructure;
+pub const SpectreMarshalErrorFormat: spectrebind::SpectreMarshalErrorType =
+    spectrebind::SpectreMarshalErrorFormat;
+pub const SpectreMarshalErrorMissing: spectrebind::SpectreMarshalErrorType =
+    spectrebind::SpectreMarshalErrorMissing;
+pub const SpectreMarshalErrorUserSecret: spectrebind::SpectreMarshalErrorType =
+    spectrebind::SpectreMarshalErrorUserSecret;
+pub const SpectreMarshalErrorIllegal: spectrebind::SpectreMarshalErrorType =
+    spectrebind::SpectreMarshalErrorIllegal;
+pub const SpectreMarshalErrorInternal: spectrebind::SpectreMarshalErrorType =
+    spectrebind::SpectreMarshalErrorInternal;
 
 #[allow(warnings)]
 mod spectrebind;

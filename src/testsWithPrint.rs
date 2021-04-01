@@ -1,11 +1,9 @@
-
 use std::cell::{RefCell, RefMut};
 
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::mem;
 use std::rc::Rc;
-
 
 use gio::ApplicationCommandLineExt;
 
@@ -16,17 +14,17 @@ extern crate libc;
 use gio::prelude::*;
 use gtk::prelude::*;
 
+use super::mpw;
 use gtk::{
     Application, ApplicationWindow, Builder, Button, ButtonsType, DialogFlags, Entry, Label,
     MessageDialog, MessageType, Window,
 };
 use pango;
 use std::time::SystemTime;
-use super::mpw;
 #[test]
-fn format_converter(){
+fn format_converter() {
     //test format converter
-    println!("Format for 2: {}", );
+    println!("Format for 2: {}",);
     assert_eq!(mpw::name_for_format(2), "JSON".to_owned());
 }
 
@@ -42,7 +40,6 @@ fn test() {
         mpw::ResultType::TemplateLong,
         mpw::AlgorithmVersion::V3,
     );
-
 
     //test Marshal
     let mut user = mpw::User::create("name", "abc", mpw::AlgorithmVersionDefault);
