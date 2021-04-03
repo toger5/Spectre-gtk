@@ -19,3 +19,8 @@ _To uninstall_
 ### Other requirements
 for Bindgen there needs to be clang installed (and maybe llvm devel packages) see: https://rust-lang.github.io/rust-bindgen/requirements.html
 When using Flatpak this should all be available
+
+## Screenshots
+![](https://github.com/toger5/Spectre-gtk/blob/master/data/Screenshot_login.png)
+## Design plans
+![](https://raw.githubusercontent.com/toger5/Spectre-gtk/master/data/Design.svg)
