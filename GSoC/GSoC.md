@@ -1,8 +1,8 @@
 ## Matrix as a file server
 
 To get to the point immediately: The idea of using matrix as a file server is very appealing. The matrix protocol checks all the boxes:
- - tree like structure with spaces
- - rooms as folders
+ - Tree like structure with spaces (=> a folder structure)
+ - Rooms as folders
  - Amazing per "folder"/room permission system thanks the the nature of users as room participants
  - As a plus: it is distributed
 
