@@ -6,17 +6,17 @@ extern crate num_derive;
 
 use std::cell::{RefCell, RefMut};
 
-// use gio::ApplicationCommandLineExt;
+use gio::ApplicationCommandLineExt;
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::mem;
 use std::rc::Rc;
 extern crate gdk;
-// extern crate gio;
+extern crate gio;
 extern crate gtk;
 extern crate libc;
 
-// use gio::prelude::*;
+use gio::prelude::*;
 use gtk::prelude::*;
 
 use gtk::{
@@ -36,10 +36,10 @@ fn main() {
             let w = windows_clone.borrow();
             if let Some(pwd_win) = w.get(&"pwd_window".to_owned()) {
                 println!("pwd_window exists. So we just show it");
-                pwd_win.show();
+                pwd_win.show_all();
             } else if let Some(login_win) = w.get(&"login_window".to_owned()) {
                 println!("login_window exists. So we just show it");
-                login_win.show();
+                login_win.show_all();
             } else if w.is_empty() {
                 println!("window does not exist so one gets created");
                 drop(w);
@@ -53,7 +53,7 @@ fn main() {
 fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<String, Window>>>) {
     // const version: spectre::AlgorithmVersion = AlgorithmVersionDefault;
     const password_type: spectre::ResultType = spectre::ResultType::TemplateLong;
-    let glade_src = include_str!("gtk_ui_files/windows.ui");
+    let glade_src = include_str!("gtk_ui_files/testwindow.ui");
     let builder = Builder::from_string(glade_src);
 
     let user: Rc<RefCell<Option<spectre::User>>> = Rc::new(RefCell::new(None));
@@ -101,7 +101,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
 
     let mut big_font = pango::FontDescription::new();
     big_font.set_size(60000);
-    // gtk::WidgetExt::override_font(&pwd_entry_big, &big_font);
+    gtk::WidgetExt::override_font(&pwd_entry_big, &big_font);
 
     // LOGIN UI connections
     {
@@ -138,13 +138,13 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                             spectre::FileMarshalReadError::File(io_err) => panic!(io_err),
                             spectre::FileMarshalReadError::Marshal(marshal_err) => {
                                 match marshal_err.type_{
-                                    spectre::SpectreMarshalSuccess => MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::Ok, "success").show(),
-                                    spectre::SpectreMarshalErrorStructure => MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::Ok, "An error in the structure of the marshall file interrupted marshalling.").show(),
-                                    spectre::SpectreMarshalErrorFormat => MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::Ok, "The marshall file uses an unsupported format version.").show(),
-                                    spectre::SpectreMarshalErrorMissing => MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::Ok, "A required value is missing or not specified.").show(),
-                                    spectre::SpectreMarshalErrorUserSecret => MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::Ok, "The given user secret is not valid.").show(),
-                                    spectre::SpectreMarshalErrorIllegal => MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::Ok, "An illegal value was specified.").show(),
-                                    spectre::SpectreMarshalErrorInternal => MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::Ok, "An internal system error interrupted marshalling.").show(),
+                                    spectre::SpectreMarshalSuccess => MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::Ok, "success").show_all(),
+                                    spectre::SpectreMarshalErrorStructure => MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::Ok, "An error in the structure of the marshall file interrupted marshalling.").show_all(),
+                                    spectre::SpectreMarshalErrorFormat => MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::Ok, "The marshall file uses an unsupported format version.").show_all(),
+                                    spectre::SpectreMarshalErrorMissing => MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::Ok, "A required value is missing or not specified.").show_all(),
+                                    spectre::SpectreMarshalErrorUserSecret => MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::Ok, "The given user secret is not valid.").show_all(),
+                                    spectre::SpectreMarshalErrorIllegal => MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::Ok, "An illegal value was specified.").show_all(),
+                                    spectre::SpectreMarshalErrorInternal => MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::Ok, "An internal system error interrupted marshalling.").show_all(),
                                     _ => panic!("unknown error type while reading marshaling from file"),
                                 }
                                 // panic!(spectre::c_char_to_string(marshal_err.message))
@@ -168,8 +168,8 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
             ));
             if let Some(user) = *usr.borrow() {
                 log_win.hide();
-                // pwd_win.hide_on_delete();
-                pwd_win.show();
+                pwd_win.hide_on_delete();
+                pwd_win.show_all();
                 // pwd_win.fullscreen();
                 // pwd_win.set_default_size(500,500);
                 pwd_win.set_resizable(false);
@@ -184,7 +184,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
             }
         });
     }
-    login_window.show();
+    login_window.show_all();
 
     // PASSWORD UI connections
     {
@@ -195,19 +195,19 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         let filter = gtk::TreeModelFilter::new(&site_list_store, None);
 
         let pwd_entry_big_clone = pwd_entry_big.clone();
-        // filter.set_visible_func(move |model, iter| {
-        //     let search_name = pwd_entry_big_clone.get_text().to_string();
-            // if pwd_entry_big_clone.get_text_length() < 1 || search_name.is_empty() {
-            //     return true;
-            // }
-            // let site_name = model
-            //     .get_value(iter, 0)
-            //     .get::<String>()
-            //     .unwrap()
-            //     .expect("a")
-            //     .to_lowercase();
-            // site_name.contains(&search_name)
-        // });
+        filter.set_visible_func(move |model, iter| {
+            let search_name = pwd_entry_big_clone.get_text().to_string();
+            if pwd_entry_big_clone.get_text_length() < 1 || search_name.is_empty() {
+                return true;
+            }
+            let site_name = model
+                .get_value(iter, 0)
+                .get::<String>()
+                .unwrap()
+                .expect("a")
+                .to_lowercase();
+            site_name.contains(&search_name)
+        });
         site_list.set_model(Some(&filter));
         pwd_entry_big.connect_changed(move |entry| {
             filter.refilter();
@@ -227,11 +227,9 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                 password_type,
                 spectre::AlgorithmVersionDefault,
             );
-            // let atom = gdk::Atom::intern("CLIPBOARD");
-            // let clipboard = gtk::Clipboard::get(&atom);
-            // entry.get_default();
-            let clipboard=entry.get_clipboard();
-            // let clipboard= gdk::Clipboard::get_default(&entry.get_display()).unwrap();
+            let atom = gdk::Atom::intern("CLIPBOARD");
+            let clipboard = gtk::Clipboard::get(&atom);
+
             // pwd_win.get_clipboard(gtk::Atom::intern("GDK_SELECTION_CLIPBOARD"))
             // .expect("There is no default Clipboard")
             clipboard.set_text(&pwd);

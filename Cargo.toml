@@ -15,15 +15,20 @@ num-traits = "0.2"
 num-derive = "0.2"
 pango = "0.9.1"
 libc = "0.2.91"
-gdk = "0.13.2"
 
 [dependencies.gtk]
-version = "0.9.2"
-features = ["v3_24"]
+package = "gtk4"
+git = "https://github.com/gtk-rs/gtk4-rs"
+# We need to use the same version as libadwaita does
+#rev = "abea0c9980bc083494eceb30dfab5eeb99a73118"
 
-[dependencies.gio]
-version = ""
-features = ["v2_44"]
+[dependencies.gdk]
+git = "https://github.com/gtk-rs/gtk4-rs/"
+package = "gdk4"
+
+[dependencies.adw]
+package = "libadwaita"
+git = "https://gitlab.gnome.org/bilelmoussaoui/libadwaita-rs.git"
 
 [build-dependencies]
 bindgen = "0.57"
