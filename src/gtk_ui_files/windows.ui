@@ -18,6 +18,9 @@
             <property name="spacing">15</property>
             <child>
               <object class="GtkLabel" id="identicon">
+                <attributes>
+                  <attribute name="size" value="40000"/>
+                </attributes>
                 <property name="width-request">250</property>
                 <property name="height-request">100</property>
                 <property name="has-focus">1</property>
