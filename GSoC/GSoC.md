@@ -11,23 +11,23 @@ I see it as a highly valuable idea to approach this field and figure out how thi
 One cool example could be managing all your .dotfiles using matrix! (Matrix would serve as a linux configuration cloud)
 
 ### How I imagine it to work
-A SDK should allow any client to easily use matrix as a cloud. (Basically the SDK should providing the same service than Firebase for a some situations)
-A lot of clients could benefit from some could service (notes app, text editor configurations, operating system configurations, Todo lists).
+A SDK should allow any client to easily use matrix as a cloud. (Basically the SDK should providing the same service than Firebase for some situations)
+A lot of clients could benefit from some kind of cloud service (notes app, text editor configurations, operating system configurations, Todo lists).
 
 ### User Story
 
-I want to achieve the following user experience (I will continue to use the Todo app example. Can be anything. For the GSoC proposal I was thinking to implement this for a password manager):
+I want to achive the following user experience (I will continue to use the Todo app example. Can be anything. For the GSoC proposal I was thinking to implement this for a password manager):
 
- - The todo app gives me the option: "sync and backup your todos using matrix" (I click on it)
- - I get prompted with "please type in your matrix address to be invited" (i type in @toger5:matrix.org)
- - I get an element notification that: "I am invited to ToDo app space" joining this folder/space shows me the file with all the todos in some format (it would even be possible to change the todos there and all clients will be updated)
+ - The Todo app gives me the option: "sync and backup your Todos using matrix" (I click on it)
+ - I get prompted with "please type in your matrix address to be invited" (I type in @toger5:matrix.org)
+ - I get a notification from Element: "I am invited to ToDo app space" joining this folder/space shows me the file with all the Todos in some format (it would even be possible to change the Todos there and all clients will be updated)
 ## The Goal
-There are 3 specific areas that need work to allow for the presented user story:
- - At the end of GSoC there should be a fully functional SDK that can be used in any application as a cloud/sync tool. It should be well documented (With the example implementation inside a password manager app.).
+There are 3 specific areas that need work to fulfill the presented user story:
+ - At the end of GSoC there should be a fully functional SDK that can be used in any application as a cloud/sync tool. It should be well documented (With an example implementation using a password manager app.).
  - The SDK should be implemented in Spectre-gtk. A password manager app. All the necessary information to generate the passwords are synced over matrix to multiple devices. This app should serve as a showcase application on how to implement the sdk.
  - The SDK should conform to the __File Tree Structure__ MSC. I want to iron out this MSC with the help of other matrix developers. I would really like to give the matrix-rust-sdk proper support for it, so that normal clients using the matrix-rust-sdk have an easier time to highlight folder spaces.
 
-The Rust (or python) sdk (Build ontop of the [rust_sdk](https://github.com/matrix-org/matrix-rust-sdk)) should be the majority of the work (the password manager is already functional enough to add matrix-backup support. See this repository). The sdk should make it really easy to connect to the matrix network. The following is a draft of how this could look like:
+The Rust (or python) sdk (Build on top of the [rust_sdk](https://github.com/matrix-org/matrix-rust-sdk)) should be the majority of the work (the password manager is already functional enough to add matrix-backup support. See this repository). The SDK should make it really easy to connect to the matrix network. The following is a draft of how this could look like:
 ```rust
 /// Create a new space used for the file backup
 /// # Arguments
@@ -90,7 +90,6 @@ Other ideas:
  - Another idea is that the client is hosting its own matrix server (p2p matrix) and creates/joins/invites to the files room from that server. This would solve the potential issue of spamming servers like mozilla.org or matrix.org with hash users...
 
 ## GSoC
-I would like to do this project in the realm of GSoC since there are some crucial decisions on how to approach (See previous section). Most importantly, how to make the client communicate with the matrix network.
-Does the client need to create an account on the matrix network.
+I would like to do this project in the realm of GSoC since there are some crucial decisions on the approach (See previous section). Most importantly, how to make the client communicate with the matrix network.
 
-This repository is a Gtk front-end written in Rust for which binds to the Spectre algorithm. So this part (although it is still super rough) is already figured out and GSoC could immediately start with the matrix side of things.
+This repository is a Gtk front-end written in Rust which binds to the Spectre algorithm. So this part (although it is still super rough) is already figured out and GSoC could immediately start with the matrix side of things.
