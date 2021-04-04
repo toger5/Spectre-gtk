@@ -6,17 +6,14 @@ extern crate num_derive;
 
 use std::cell::{RefCell, RefMut};
 
-// use gio::ApplicationCommandLineExt;
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::mem;
 use std::rc::Rc;
 extern crate gdk;
-// extern crate gio;
+
 extern crate gtk;
 extern crate libc;
-
-// use gio::prelude::*;
 use gtk::prelude::*;
 
 use gtk::{
@@ -98,10 +95,6 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
     column.add_attribute(&cell, "text", 0);
     site_list.append_column(&column);
     let site_list_store = gtk::ListStore::new(&[String::static_type()]);
-
-    let mut big_font = pango::FontDescription::new();
-    big_font.set_size(60000);
-    // gtk::WidgetExt::override_font(&pwd_entry_big, &big_font);
 
     // LOGIN UI connections
     {
@@ -195,19 +188,21 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         let filter = gtk::TreeModelFilter::new(&site_list_store, None);
 
         let pwd_entry_big_clone = pwd_entry_big.clone();
-        // filter.set_visible_func(move |model, iter| {
-        //     let search_name = pwd_entry_big_clone.get_text().to_string();
-            // if pwd_entry_big_clone.get_text_length() < 1 || search_name.is_empty() {
-            //     return true;
-            // }
-            // let site_name = model
-            //     .get_value(iter, 0)
-            //     .get::<String>()
-            //     .unwrap()
-            //     .expect("a")
-            //     .to_lowercase();
-            // site_name.contains(&search_name)
-        // });
+        filter.set_visible_func(move |model:&gtk::TreeModel, iter:&gtk::TreeIter| {
+            let search_name = pwd_entry_big_clone.get_text().to_string();
+            if pwd_entry_big_clone.get_text_length() < 1 || search_name.is_empty() {
+                return true;
+            }
+            
+            // model.get();
+            // true
+            let site_name = (*model).get(iter, 0)
+                .get::<String>()
+                .unwrap()
+                .expect("a")
+                .to_lowercase();
+            site_name.contains(&search_name)
+        });
         site_list.set_model(Some(&filter));
         pwd_entry_big.connect_changed(move |entry| {
             filter.refilter();
@@ -227,18 +222,9 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                 password_type,
                 spectre::AlgorithmVersionDefault,
             );
-            // let atom = gdk::Atom::intern("CLIPBOARD");
-            // let clipboard = gtk::Clipboard::get(&atom);
-            // entry.get_default();
-            let clipboard=entry.get_clipboard();
-            // let clipboard= gdk::Clipboard::get_default(&entry.get_display()).unwrap();
-            // pwd_win.get_clipboard(gtk::Atom::intern("GDK_SELECTION_CLIPBOARD"))
-            // .expect("There is no default Clipboard")
-            clipboard.set_text(&pwd);
-            // gtk::Clipboard::get_default(
-            // 	&pwd_win
-            // 	.get_display(),
-            // )
+            
+            entry.get_clipboard().set_text(&pwd);
+
             println!(
                 "pwd for site {} ({:}) saved to clipboard",
                 site_name.as_str(),
