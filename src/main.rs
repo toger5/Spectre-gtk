@@ -4,6 +4,7 @@
 #[macro_use]
 extern crate num_derive;
 
+
 use std::cell::{RefCell, RefMut};
 
 use std::collections::HashMap;
@@ -23,27 +24,57 @@ use gtk::{
 use pango;
 use std::time::SystemTime;
 
+mod ui;
+
+use ui::spectre_app::SpectreApp;
+use ui::password_list_item::PasswordListBox;
+
 fn main() {
-    let windows: Rc<RefCell<HashMap<String, Window>>> = Rc::new(RefCell::new(HashMap::new()));
-    let application = Application::new(Some("timo.gtk.spectre"), Default::default())
-        .expect("failed to initialize GTK application");
-    {
-        let windows_clone = windows.clone();
-        application.connect_activate(move |app| {
-            let w = windows_clone.borrow();
-            if let Some(pwd_win) = w.get(&"pwd_window".to_owned()) {
-                println!("pwd_window exists. So we just show it");
-                pwd_win.show();
-            } else if let Some(login_win) = w.get(&"login_window".to_owned()) {
-                println!("login_window exists. So we just show it");
-                login_win.show();
-            } else if w.is_empty() {
-                println!("window does not exist so one gets created");
-                drop(w);
-                build_ui(app, windows_clone.clone());
-            }
-        });
-    }
+    // Current App
+    // let windows: Rc<RefCell<HashMap<String, Window>>> = Rc::new(RefCell::new(HashMap::new()));
+    // let application = Application::new(Some("timo.gtk.spectre"), Default::default())
+    //     .expect("failed to initialize GTK application");
+    // {
+    //     let windows_clone = windows.clone();
+    //     application.connect_activate(move |app| {
+    //         let w = windows_clone.borrow();
+    //         if let Some(pwd_win) = w.get(&"pwd_window".to_owned()) {
+    //             println!("pwd_window exists. So we just show it");
+    //             pwd_win.show();
+    //         } else if let Some(login_win) = w.get(&"login_window".to_owned()) {
+    //             println!("login_window exists. So we just show it");
+    //             login_win.show();
+    //         } else if w.is_empty() {
+    //             println!("window does not exist so one gets created");
+    //             drop(w);
+    //             build_ui(app, windows_clone.clone());
+    //         }
+    //     });
+    // }
+    // application.run(&[]);
+
+
+    // Test with coustom application
+    // let app = SpectreApp::with_username("jung junge jugne\n jetzt wird gegessen");
+    // let argv = std::env::args().collect::<Vec<_>>();
+    // std::process::exit(app.run(&argv));
+
+    // Test With coustom widget
+    let application = gtk::Application::new(
+        Some("com.github.gtk-rs.examples.widget_subclass"),
+        Default::default(),
+    )
+    .expect("Initialization failed...");
+
+    application.connect_activate(|app| {
+        let window = gtk::ApplicationWindow::new(app);
+        let pwd_box = PasswordListBox::new();
+        pwd_box.set_site_name("helloWorld.com");
+        // let pwd_box_ = ui::password_list_item::imp::PasswordListBox::from_instance(pwd_box);
+        window.set_child(Some(&pwd_box));
+        window.show();
+    });
+
     application.run(&[]);
 }
 
@@ -194,12 +225,10 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                 return true;
             }
             
-            // model.get();
-            // true
             let site_name = (*model).get(iter, 0)
                 .get::<String>()
                 .unwrap()
-                .expect("a")
+                .expect("Tree value has wrong type (expected String)")
                 .to_lowercase();
             site_name.contains(&search_name)
         });
