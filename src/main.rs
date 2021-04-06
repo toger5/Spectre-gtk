@@ -4,7 +4,6 @@
 #[macro_use]
 extern crate num_derive;
 
-
 use std::cell::{RefCell, RefMut};
 
 use std::collections::HashMap;
@@ -26,8 +25,8 @@ use std::time::SystemTime;
 
 mod ui;
 
-use ui::spectre_app::SpectreApp;
 use ui::password_list_item::PasswordListBox;
+use ui::spectre_app::SpectreApp;
 
 fn main() {
     // Current App
@@ -53,7 +52,6 @@ fn main() {
     // }
     // application.run(&[]);
 
-
     // Test with coustom application
     // let app = SpectreApp::with_username("jung junge jugne\n jetzt wird gegessen");
     // let argv = std::env::args().collect::<Vec<_>>();
@@ -67,6 +65,15 @@ fn main() {
     .expect("Initialization failed...");
 
     application.connect_activate(|app| {
+        // Load custom styling
+        let p = gtk::CssProvider::new();
+        let mut file = match File::open(path) {
+            Ok(file) => file,
+            Err(io_err) => return Err(FileMarshalReadError::File(io_err)),
+        };
+        p.load_from_file(file);
+        gtk::StyleContext::add_provider_for_screen(&gdk::Screen::get_default().unwrap(), &p, 500);
+
         let window = gtk::ApplicationWindow::new(app);
         let pwd_box = PasswordListBox::new();
         pwd_box.set_site_name("helloWorld.com");
@@ -219,13 +226,14 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         let filter = gtk::TreeModelFilter::new(&site_list_store, None);
 
         let pwd_entry_big_clone = pwd_entry_big.clone();
-        filter.set_visible_func(move |model:&gtk::TreeModel, iter:&gtk::TreeIter| {
+        filter.set_visible_func(move |model: &gtk::TreeModel, iter: &gtk::TreeIter| {
             let search_name = pwd_entry_big_clone.get_text().to_string();
             if pwd_entry_big_clone.get_text_length() < 1 || search_name.is_empty() {
                 return true;
             }
-            
-            let site_name = (*model).get(iter, 0)
+
+            let site_name = (*model)
+                .get(iter, 0)
                 .get::<String>()
                 .unwrap()
                 .expect("Tree value has wrong type (expected String)")
@@ -251,7 +259,6 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                 password_type,
                 spectre::AlgorithmVersionDefault,
             );
-            
             entry.get_clipboard().set_text(&pwd);
 
             println!(
