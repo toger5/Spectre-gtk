@@ -38,21 +38,21 @@ mod imp {
 
         fn class_init(klass: &mut Self::Class) {
             // The layout manager determines how child widgets are laid out.
-            klass.set_layout_manager_type::<gtk::BinLayout>();
+            // klass.set_layout_manager_type::<gtk::BinLayout>();
 
-            // Make it look like a GTK PasswordListBox.
-            // klass.set_css_name("PasswordListBox");
+            // Make it look like a GTK Entry.
+            klass.set_css_name("entry");
         }
     }
     // impl
     impl ObjectImpl for PasswordListBox {
         fn constructed(&self, obj: &Self::Type) {
             self.parent_constructed(obj);
-            // let vbox_main = gtk::Box::new(gtk::Orientation::Vertical,30);
-            // obj.set_orientation(gtk::Orientation::Vertical);
-            let hbox_top = gtk::Box::new(gtk::Orientation::Vertical, 30);
+            obj.set_orientation(gtk::Orientation::Vertical);
+            obj.set_spacing(30);
+            let hbox_top = gtk::Box::new(gtk::Orientation::Horizontal, 30);
             *self.hbox_top.borrow_mut() = Some(hbox_top);
-            let hbox_bottom = gtk::Box::new(gtk::Orientation::Vertical, 30);
+            let hbox_bottom = gtk::Box::new(gtk::Orientation::Horizontal, 30);
             *self.hbox_bottom.borrow_mut() = Some(hbox_bottom);
             obj.append(self.hbox_top.borrow().as_ref().unwrap());
             obj.append(self.hbox_bottom.borrow().as_ref().unwrap());
@@ -60,25 +60,31 @@ mod imp {
             let site_label = gtk::Label::new(Some("github.com"));
             self.hbox_top.borrow().as_ref().unwrap().append(&site_label);
             *self.site_label.borrow_mut() = Some(site_label);
+
             let copy_button = gtk::Button::with_label("Copy");
-            self.hbox_top.borrow().as_ref().unwrap().append(self.site_label.borrow().as_ref().unwrap());
+            self.hbox_top.borrow().as_ref().unwrap().append(&copy_button);
             *self.copy_button.borrow_mut() = Some(copy_button);
+
             let password_label = gtk::Entry::new();
             password_label.set_text("Haga0.RenoBetu");
             password_label.set_visibility(false);
             password_label.set_has_frame(false);
-            password_label.set_editable(false);
+            password_label.set_can_focus(false);
             self.hbox_bottom.borrow().as_ref().unwrap().append(&password_label);
-            let password_show_button = gtk::Button::with_label("Show");
+            let password_show_button = gtk::Button::with_label("Hidden");
             password_show_button.set_has_frame(false);
             self.hbox_bottom.borrow().as_ref().unwrap().append(&password_show_button);
-            password_show_button.connect_activate(glib::clone!(@weak password_label => move |_| {
-                password_label.set_visibility(!password_label.get_visibility());
+            password_show_button.connect_clicked(glib::clone!(@weak password_label, @weak password_show_button => move |_| {
+                let is_visible = password_label.get_visibility();
+                password_label.set_visibility(!is_visible);
+                if is_visible{
+                    password_show_button.set_label("Hidden");
+                }else{
+                    password_show_button.set_label("Shown");
+                }
             }));
+
             *self.password_label.borrow_mut() = Some(password_label);
-            // button_increase.connect_clicked(clone!(@strong number => move |_| {
-            //     *number.borrow_mut() += 1;
-            // }));
             *self.password_show_button.borrow_mut() = Some(password_show_button);
         }
 
