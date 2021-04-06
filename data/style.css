@@ -1,6 +1,7 @@
 box.view {
 	border-radius:0px;
 	padding: 10px;
+	margin: 8px;
 	border-bottom-width: 30px;
 	border:1px solid rgb(200,200,200);
 }
@@ -12,4 +13,21 @@ box.bottom {
 box.top {
 	border-top-left-radius:10px;
 	border-top-right-radius:10px;
+}
+button.tiny {
+	font-size: 13px;
+	min-height:0px;
+	color: grey;
+	padding-top:0px;
+	padding-left:10px;
+	padding-right:10px;
+	padding-bottom:0px;
+}
+.monospace{
+	font-family: "source code pro";
+	color: rgb(200,200,200);
+}
+.site-name-label{
+	font-size: 25px;
+	font-weight: 300;
 }

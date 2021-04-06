@@ -15,7 +15,7 @@ extern crate gdk;
 extern crate gtk;
 extern crate libc;
 use gtk::prelude::*;
-
+use std::fs::File;
 use gtk::{
     Application, ApplicationWindow, Builder, Button, ButtonsType, DialogFlags, Entry, Label,
     MessageDialog, MessageType, TreeModelFilterExt, Window,
@@ -27,6 +27,9 @@ mod ui;
 
 use ui::password_list_item::PasswordListBox;
 use ui::spectre_app::SpectreApp;
+
+mod paths;
+
 
 fn main() {
     // Current App
@@ -66,13 +69,12 @@ fn main() {
 
     application.connect_activate(|app| {
         // Load custom styling
-        let p = gtk::CssProvider::new();
-        let mut file = match File::open(path) {
-            Ok(file) => file,
-            Err(io_err) => return Err(FileMarshalReadError::File(io_err)),
-        };
-        p.load_from_file(file);
-        gtk::StyleContext::add_provider_for_screen(&gdk::Screen::get_default().unwrap(), &p, 500);
+        let mut path = paths::Paths::new().prefix;
+        path.push("data/style.css");
+        let provider = gtk::CssProvider::new();
+        provider.load_from_file(&gdk::gio::File::new_for_path(&path));
+        
+        gtk::StyleContext::add_provider_for_display(&gdk::Display::get_default().unwrap(), &provider, 500);
 
         let window = gtk::ApplicationWindow::new(app);
         let pwd_box = PasswordListBox::new();
