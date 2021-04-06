@@ -1,4 +1,4 @@
-_! WIP !_
+_! WIP ! Feedback is very welcome via: @toger5:matrix.org_ 
 # Matrix as a backup/cloud service (application back-end)
 
 To get to the point immediately: The idea of using matrix as a file server is very appealing. The matrix protocol checks all the boxes:
