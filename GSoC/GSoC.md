@@ -1,5 +1,5 @@
 _! WIP ! Feedback is very welcome via: @toger5:matrix.org_ 
-# Matrix as a backup/cloud service (application back-end)
+# Matrix as a backup/cloud service (Application back-end)
 
 To get to the point immediately: The idea of using matrix as a file server is very appealing. The matrix protocol checks all the boxes:
  - Tree like structure with spaces (a folder structure)
@@ -69,7 +69,7 @@ The idea is to develop the SDK around a simple example: A password manager based
 
 Matrix should backup and sync the file where all the website/service names (like: `github.com`). So the names of the services are in a matrix room/directory, but **without the plain text passwords**.
 
-The password manager app (written in gtk) is already implemented (bare-bones but usable...)
+The password manager app (written in GTK) is already implemented (bare-bones but usable...)
 
 I think it is nice to have a finished product at the end of GSoC, so having the sdk implemented inside an app I use would be nice. The project of building a full file system infrastructure around matrix the way I imagine it is too big for a GSoC project. Even though the password manager is not helpful for matrix directly it helps to communicate the idea and helps me to not get sidetracked on other matrix file system related tasks.
 
@@ -96,4 +96,18 @@ Other ideas:
 ## GSoC
 I would like to do this project in the realm of GSoC since there are some crucial decisions on the approach (See previous section). Most importantly, how to make the client communicate with the matrix network.
 
-This repository is a Gtk front-end written in Rust which binds to the Spectre algorithm. So this part (although it is still super rough) is already figured out and GSoC could immediately start with the matrix side of things.
+This repository is a GTK front-end written in Rust which binds to the Spectre algorithm. So this part (although it is still super rough) is already figured out and GSoC could immediately start with the matrix side of things.
+
+### Further considerations
+To project can be extended in multiple ways in case the goal is before end of GSoC.
+ - Documentation (having good documentation for the rust library and a well written explanation of how to implement the file server feature in any app.)
+ - With the gained experience I could see myself in a good position to implement support for the file tree MSC in a client (probably element). This is something I would be interested in working on after GSoC as well.
+
+## About me
+I am a physics student at the University of Constance.
+My background in programming started in around 2015. Since than I became exited about coding and could find a lot of satisfaction in doing it. During my studies It was hard to fit that hobby into the every day university life. That always made me sad to some extend so I decided to do most of my courses for the masters in the first master semesters. To have a lot of free time during the summer semester (I can squeeze all the uni stuff into one day a week. The rest would be basically free except for the two weeks at the end of the semester for exams).
+Lots of my programming experience I gathered from contributing to the Godot engine project. I have also done bigger projects with swift (A summer school (MakeSchool), multiple ios apps), c++ (Godot Engine), python (Lots of small projects for example with the BGE), java (multiple games, a course at university), dart (Android app for defining and sharing boulder problems (climbing)).
+I have some experience in rust. Mostly because of the GTK password app I coded prior to GSoC.  I am confident that this is enough to get started on the project really quickly.
+
+I also would like to mention my excitement for the matrix ecosystem. The possibilities and importance of an open protocol for communication is really interesting to me from a technical standpoint and its relevance for society.
+This is a huge source of motivation for me and it would be super exciting for me to explore the possibilities of matrix in areas outside of a chat system and communicate/showcase what is possible.
