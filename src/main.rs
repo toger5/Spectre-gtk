@@ -76,7 +76,7 @@ fn main() {
 
         let window = gtk::ApplicationWindow::new(app);
         // let store = gtk::gio::ListStore::new( glib::GString::static_type());
-        let string_store = gtk::StringList::new(&["hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine", "www.google.de"]);
+        let string_store = gtk::StringList::new(&["youtube.com","matrix","pinterest","gmail.com", "facbook", "shine", "amazon.de", "bonprix.de"]);
         let model = gtk::NoSelection::new(Some(&string_store));
 
         let factory = gtk::SignalListItemFactory::new();
@@ -86,14 +86,16 @@ fn main() {
             item.set_child(Some(&pwd_box));
         });
         factory.connect_bind(|fact, item|{
-            println!("{}",item);
-            let pwd_box = PasswordListBox::new();
-            pwd_box.set_site_name("helloWorld.com");
-            item.set_child(Some(&pwd_box));
-            item.child();
+            // println!("{}",item);
+            // let pwd_box = PasswordListBox::new();
+            // pwd_box.set_site_name("helloWorld.com");
+            // item.set_child(Some(&pwd_box));
+            // item.child();
             // widget.downcast::<gtk::Button>().is_ok();
-            // let pwd_box = item.child().expect("no child found in password list item").downcast::<PasswordListBox>().ok();
-            // pwd_box.set_site_name(item.item().downcast::<glib::GString>().ok().as_str())
+            // let s = item.property("stirng");
+            let pwd_box = item.child().expect("no child found in password list item").downcast::<PasswordListBox>().ok().unwrap();
+            let prop = item.item().unwrap().property("string").ok().unwrap().get::<String>().ok().unwrap().unwrap();
+            pwd_box.set_site_name(&prop);
         });
 
         let list = gtk::ListView::new(Some(&model),Some(&factory));
