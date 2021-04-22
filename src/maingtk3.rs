@@ -110,7 +110,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         let pwd = spectre_entry.clone();
         spectre_entry.connect_changed(move |spectre_entry| {
             identicon_label.set_markup(
-                &spectre::identicon(name.get_text().as_str(), pwd.get_text().as_str()).to_string(),
+                &spectre::identicon(name.text().as_str(), pwd.text().as_str()).to_string(),
             );
         });
     }
@@ -126,12 +126,12 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         spectre_entry.connect_activate(move |_| {
 
             let mut path = dirs::config_dir().unwrap();
-            path.push(format!("{}", name.get_text().as_str()));
+            path.push(format!("{}", name.text().as_str()));
             path.set_extension("mpsites");
 
             // check if user already exists:
             if path.exists() {
-                match spectre::User::authenticate(&path, pwd.get_text().as_str().to_string()){
+                match spectre::User::authenticate(&path, pwd.text().as_str().to_string()){
                     Ok(user) => *usr.borrow_mut() = Some(user),
                     Err(err) => {
                         match err {
@@ -156,14 +156,14 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                 // TODO only create new user when yes is chosen
                 let dialog = MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::YesNo, "Are u suuure? \n (About creating a new user.)").show();
                 *usr.borrow_mut() = Some(spectre::User::create(
-                    name.get_text().as_str(),
-                    pwd.get_text().as_str(),
+                    name.text().as_str(),
+                    pwd.text().as_str(),
                     spectre::AlgorithmVersionDefault,
                 ));
             }
             *m_k.borrow_mut() = Some(spectre::user_key(
-                name.get_text().as_str(),
-                pwd.get_text().as_str(),
+                name.text().as_str(),
+                pwd.text().as_str(),
                 spectre::AlgorithmVersionDefault,
             ));
             if let Some(user) = *usr.borrow() {
@@ -196,8 +196,8 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
 
         let pwd_entry_big_clone = pwd_entry_big.clone();
         filter.set_visible_func(move |model, iter| {
-            let search_name = pwd_entry_big_clone.get_text().to_string();
-            if pwd_entry_big_clone.get_text_length() < 1 || search_name.is_empty() {
+            let search_name = pwd_entry_big_clone.text().to_string();
+            if pwd_entry_big_clone.text_length() < 1 || search_name.is_empty() {
                 return true;
             }
             let site_name = model
@@ -220,7 +220,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         pwd_entry_big.connect_activate(move |entry| {
             // log_win.hide();
             let m_k = m_k.borrow().expect("NO MASTER KEY GOT DAMMIT");
-            let site_name = entry.get_text();
+            let site_name = entry.text();
             let pwd = spectre::site_result(
                 site_name.as_str(),
                 m_k,

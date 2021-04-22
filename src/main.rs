@@ -5,20 +5,19 @@
 extern crate num_derive;
 
 use std::cell::{RefCell, RefMut};
-
 use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::mem;
 use std::rc::Rc;
 extern crate gdk;
-
 extern crate gtk;
 extern crate libc;
 use gtk::prelude::*;
 use std::fs::File;
+// use glib;
 use gtk::{
     Application, ApplicationWindow, Builder, Button, ButtonsType, DialogFlags, Entry, Label,
-    MessageDialog, MessageType, TreeModelFilterExt, Window,
+    MessageDialog, MessageType, TreeModelFilterExt, Window, glib, ListItem,
 };
 use pango;
 use std::time::SystemTime;
@@ -64,8 +63,7 @@ fn main() {
     let application = gtk::Application::new(
         Some("com.github.gtk-rs.examples.widget_subclass"),
         Default::default(),
-    )
-    .expect("Initialization failed...");
+    );
 
     application.connect_activate(|app| {
         // Load custom styling
@@ -74,17 +72,41 @@ fn main() {
         let provider = gtk::CssProvider::new();
         provider.load_from_file(&gdk::gio::File::new_for_path(&path));
         
-        gtk::StyleContext::add_provider_for_display(&gdk::Display::get_default().unwrap(), &provider, 500);
+        gtk::StyleContext::add_provider_for_display(&gdk::Display::default().unwrap(), &provider, 500);
 
         let window = gtk::ApplicationWindow::new(app);
-        let pwd_box = PasswordListBox::new();
-        pwd_box.set_site_name("helloWorld.com");
-        // let pwd_box_ = ui::password_list_item::imp::PasswordListBox::from_instance(pwd_box);
-        window.set_child(Some(&pwd_box));
+        // let store = gtk::gio::ListStore::new( glib::GString::static_type());
+        let string_store = gtk::StringList::new(&["hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine","hallo", "das sind Meine", "www.google.de"]);
+        let model = gtk::NoSelection::new(Some(&string_store));
+
+        let factory = gtk::SignalListItemFactory::new();
+        factory.connect_setup(|fact, item|{
+            let pwd_box = PasswordListBox::new();
+            pwd_box.set_site_name("helloWorld.com");
+            item.set_child(Some(&pwd_box));
+        });
+        factory.connect_bind(|fact, item|{
+            println!("{}",item);
+            let pwd_box = PasswordListBox::new();
+            pwd_box.set_site_name("helloWorld.com");
+            item.set_child(Some(&pwd_box));
+            item.child();
+            // widget.downcast::<gtk::Button>().is_ok();
+            // let pwd_box = item.child().expect("no child found in password list item").downcast::<PasswordListBox>().ok();
+            // pwd_box.set_site_name(item.item().downcast::<glib::GString>().ok().as_str())
+        });
+
+        let list = gtk::ListView::new(Some(&model),Some(&factory));
+        let sw = gtk::ScrolledWindow::new();
+        sw.set_child(Some(&list));
+        sw.set_min_content_height(300);
+        sw.set_min_content_width(500);
+        sw.set_propagate_natural_width(true);
+        window.set_child(Some(&sw));
         window.show();
     });
 
-    application.run(&[]);
+    application.run();
 }
 
 fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<String, Window>>>) {
@@ -96,8 +118,8 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
     let user: Rc<RefCell<Option<spectre::User>>> = Rc::new(RefCell::new(None));
     let master_key: Rc<RefCell<Option<spectre::SpectreUserKey>>> = Rc::new(RefCell::new(None));
     //login Window
-    let login_window: gtk::Window = builder
-        .get_object("login_window")
+    let login_window: Window = builder
+        .object("login_window")
         .expect("Couldn't get login_window");
     login_window.set_resizable(false);
     application.add_window(&login_window);
@@ -106,35 +128,35 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         .insert("login_window".to_owned(), login_window.clone());
 
     //pwd Window
-    let pwd_window: gtk::Window = builder.get_object("password_window").unwrap();
+    let pwd_window: gtk::Window = builder.object("password_window").unwrap();
     application.add_window(&pwd_window);
 
     // LOGIN UI
     let name_entry: Entry = builder
-        .get_object("username")
+        .object("username")
         .expect("Couldn't get username Entry");
     let spectre_entry: Entry = builder
-        .get_object("masterpassword")
+        .object("masterpassword")
         .expect("Couldn't get masterpassword Entry");
     let identicon_label: Label = builder
-        .get_object("identicon")
+        .object("identicon")
         .expect("Couldn't get identicon Label");
 
     // PASSWORD UI
     let pwd_entry_big: Entry = builder
-        .get_object("spectre_entry_big")
+        .object("spectre_entry_big")
         .expect("Couldn't get spectre_entry_big Entry");
-    let site_list: gtk::TreeView = builder
-        .get_object("site_list")
+    let site_list: gtk::ListView = builder
+        .object("site_list")
         .expect("Couldn't get site_list TreeView");
-    site_list.set_headers_visible(false);
+    // site_list.set_headers_visible(false);
     let column = gtk::TreeViewColumn::new();
     let cell = gtk::CellRendererText::new();
     column.pack_start(&cell, true);
     // Association of the view's column with the model's `id` column.
     column.add_attribute(&cell, "text", 0);
-    site_list.append_column(&column);
-    let site_list_store = gtk::ListStore::new(&[String::static_type()]);
+    // site_list.append_column(&column);
+    let site_list_store = gtk::StringList::new(&[]);
 
     // LOGIN UI connections
     {
@@ -143,7 +165,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         let pwd = spectre_entry.clone();
         spectre_entry.connect_changed(move |spectre_entry| {
             identicon_label.set_markup(
-                &spectre::identicon(name.get_text().as_str(), pwd.get_text().as_str()).to_string(),
+                &spectre::identicon(name.text().as_str(), pwd.text().as_str()).to_string(),
             );
         });
     }
@@ -159,12 +181,12 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         spectre_entry.connect_activate(move |_| {
 
             let mut path = dirs::config_dir().unwrap();
-            path.push(format!("{}", name.get_text().as_str()));
+            path.push(format!("{}", name.text().as_str()));
             path.set_extension("mpsites");
 
             // check if user already exists:
             if path.exists() {
-                match spectre::User::authenticate(&path, pwd.get_text().as_str().to_string()){
+                match spectre::User::authenticate(&path, pwd.text().as_str().to_string()){
                     Ok(user) => *usr.borrow_mut() = Some(user),
                     Err(err) => {
                         match err {
@@ -189,14 +211,14 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                 // TODO only create new user when yes is chosen
                 let dialog = MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::YesNo, "Are u suuure? \n (About creating a new user.)").show();
                 *usr.borrow_mut() = Some(spectre::User::create(
-                    name.get_text().as_str(),
-                    pwd.get_text().as_str(),
+                    name.text().as_str(),
+                    pwd.text().as_str(),
                     spectre::AlgorithmVersionDefault,
                 ));
             }
             *m_k.borrow_mut() = Some(spectre::user_key(
-                name.get_text().as_str(),
-                pwd.get_text().as_str(),
+                name.text().as_str(),
+                pwd.text().as_str(),
                 spectre::AlgorithmVersionDefault,
             ));
             if let Some(user) = *usr.borrow() {
@@ -225,27 +247,35 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         pwd_window.connect_show(move |window| {
             pwd_entry_big_clone.set_text("");
         });
-        let filter = gtk::TreeModelFilter::new(&site_list_store, None);
-
+        
         let pwd_entry_big_clone = pwd_entry_big.clone();
-        filter.set_visible_func(move |model: &gtk::TreeModel, iter: &gtk::TreeIter| {
-            let search_name = pwd_entry_big_clone.get_text().to_string();
-            if pwd_entry_big_clone.get_text_length() < 1 || search_name.is_empty() {
-                return true;
-            }
+        let search_name = pwd_entry_big_clone.text().to_string();
+        // let filter = gtk::StringFilter::new(None);
+        // filter.set_search(Some(&search_name));
+        // filter_model.set_filter(filter);
+        // let filter_model = gtk::FilterListModel::new(Some(&site_list_store), Some(&filter));
+        // filter.set_visible_func(move |model: &gtk::TreeModel, iter: &gtk::TreeIter| {
+        //     let search_name = pwd_entry_big_clone.text().to_string();
+        //     if pwd_entry_big_clone.text_length() < 1 || search_name.is_empty() {
+        //         return true;
+        //     }
 
-            let site_name = (*model)
-                .get(iter, 0)
-                .get::<String>()
-                .unwrap()
-                .expect("Tree value has wrong type (expected String)")
-                .to_lowercase();
-            site_name.contains(&search_name)
-        });
+        //     let site_name = (*model)
+        //         .get(iter, 0)
+        //         .get::<String>()
+        //         .unwrap()
+        //         .expect("Tree value has wrong type (expected String)")
+        //         .to_lowercase();
+        //     site_name.contains(&search_name)
+        // });
+
+        //TODO-OldList
+        /*
         site_list.set_model(Some(&filter));
         pwd_entry_big.connect_changed(move |entry| {
             filter.refilter();
         });
+        */
 
         let pwd_win = pwd_window.clone();
         let m_k = master_key.clone();
@@ -254,14 +284,14 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         pwd_entry_big.connect_activate(move |entry| {
             // log_win.hide();
             let m_k = m_k.borrow().expect("NO MASTER KEY GOT DAMMIT");
-            let site_name = entry.get_text();
+            let site_name = entry.text();
             let pwd = spectre::site_result(
                 site_name.as_str(),
                 m_k,
                 password_type,
                 spectre::AlgorithmVersionDefault,
             );
-            entry.get_clipboard().set_text(&pwd);
+            entry.clipboard().set_text(&pwd);
 
             println!(
                 "pwd for site {} ({:}) saved to clipboard",
@@ -306,17 +336,17 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
     }
 }
 
-fn fill_site_list(store: &gtk::ListStore, user: &spectre::User) {
+fn fill_site_list(store: &gtk::StringList, user: &spectre::User) {
     // print!("sites:\n");
     let entriesfile = user.get_sites();
-    store.clear();
+    // store.clear();
     for site in entriesfile {
         //user.get_sites() {
 
         unsafe {
             let site_name: String = (*site).get_name(); //(*site).get_name();c
                                                         // print!("{}",site_name);
-            store.insert_with_values(None, &[0], &[&site_name]);
+            store.append(&site_name);
         }
     }
 }

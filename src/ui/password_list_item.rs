@@ -100,7 +100,7 @@ mod imp {
             password_show_button.set_has_frame(false);
             password_show_button.connect_clicked(
                 glib::clone!(@weak password_label, @weak password_show_button => move |_| {
-                    let is_visible = password_label.get_visibility();
+                    let is_visible = gtk::EntryExt::is_visible(&password_label);
                     password_label.set_visibility(!is_visible);
                     if is_visible{
                         password_show_button.set_label("Hidden");
