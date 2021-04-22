@@ -19,8 +19,6 @@ libc = "0.2.91"
 [dependencies.gtk]
 package = "gtk4"
 git = "https://github.com/gtk-rs/gtk4-rs"
-# We need to use the same version as libadwaita does
-#rev = "abea0c9980bc083494eceb30dfab5eeb99a73118"
 
 [dependencies.gdk]
 git = "https://github.com/gtk-rs/gtk4-rs/"
