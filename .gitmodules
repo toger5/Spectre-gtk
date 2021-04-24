@@ -1,3 +1,4 @@
 [submodule "src/spectre/api"]
 	path = src/spectre/api
-	url = git@gitlab.com:spectre.app/api.git
+	url = git@github.com:toger5/api.git
+	branch = rs-patch
