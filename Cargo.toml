@@ -19,14 +19,16 @@ libc = "0.2.91"
 [dependencies.gtk]
 package = "gtk4"
 git = "https://github.com/gtk-rs/gtk4-rs"
+#rev = "598362f0111bca65ff07203bf8f38a3da7ea29d5"
 
 [dependencies.gdk]
 git = "https://github.com/gtk-rs/gtk4-rs/"
 package = "gdk4"
 
-[dependencies.adw]
-package = "libadwaita"
-git = "https://gitlab.gnome.org/bilelmoussaoui/libadwaita-rs.git"
+#[dependencies.adw]
+#package = "libadwaita"
+#git = "https://gitlab.gnome.org/bilelmoussaoui/libadwaita-rs.git"
+#rev = "6088bb634a406402f308f01d2f33067951d5095b"
 
 [build-dependencies]
 bindgen = "0.57"
