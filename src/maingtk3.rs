@@ -57,7 +57,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
     let builder = Builder::from_string(glade_src);
 
     let user: Rc<RefCell<Option<spectre::User>>> = Rc::new(RefCell::new(None));
-    let master_key: Rc<RefCell<Option<spectre::SpectreUserKey>>> = Rc::new(RefCell::new(None));
+    let master_key: Rc<RefCell<Option<spectre::UserKey>>> = Rc::new(RefCell::new(None));
     //login Window
     let login_window: gtk::Window = builder
         .get_object("login_window")

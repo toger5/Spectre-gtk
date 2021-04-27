@@ -4,7 +4,7 @@ use std::env;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-
+use crate::spectre;
 mod imp {
     use super::*;
     // use gtk::subclass::prelude::*;
@@ -22,12 +22,16 @@ mod imp {
         /// Widgets automatically store strong references to their children, added in `set_parent()`
         /// and removed in `unparent()`. Therefore, this field could be a `WeakRef<gtk::Widget>`.
         /// Using a strong reference is just a little clearer.
+
+        pub site_name: String,
         pub site_label: RefCell<Option<gtk::Label>>,
         copy_button: RefCell<Option<gtk::Button>>,
-        password_label: RefCell<Option<gtk::Entry>>,
+        pub password_label: RefCell<Option<gtk::Entry>>,
         password_show_button: RefCell<Option<gtk::Button>>,
         hbox_top: RefCell<Option<gtk::Box>>,
         hbox_bottom: RefCell<Option<gtk::Box>>,
+        pub user: WeakRespectre::User,
+        pub user_key: spectre::UserKey,
     }
 
     #[glib::object_subclass]
@@ -149,8 +153,14 @@ impl PasswordListBox {
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create PasswordListBox")
     }
+    pub fn setup_user(&self, usr: spectre::User,usr_key: spectre::UserKey){
+        let self_ = imp::PasswordListBox::from_instance(&self);
+        self_.user = usr;
+        self_.user_key = usr_key
+    }
     pub fn set_site_name(&self, name: &str) {
         let self_ = imp::PasswordListBox::from_instance(&self);
+        // self_.password_label.borrow().as_ref().unwrap().set_text(spectre::site_result(name, user_key: UserKey, result_type: ResultType, algorithm_version: AlgorithmVersion));
         self_.site_label.borrow().as_ref().unwrap().set_text(name);
     }
 }

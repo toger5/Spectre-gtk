@@ -1,14 +1,28 @@
 // use super::spectrebind;
 use std;
 use std::ffi::{CStr, CString};
-
+use std::fmt::Debug;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
 extern crate num;
 
-pub type SpectreUserKey = spectrebind::SpectreUserKey;
-
+pub type UserKey = spectrebind::SpectreUserKey;
+impl Debug for UserKey{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("spectre::UserKey")
+        .field("bytes", &self.bytes)
+        .field("keyID", &self.keyID.hex)
+        .field("algorithm", &self.algorithm)
+        .finish()
+    }
+}
+impl Default for UserKey{
+    fn default() -> UserKey{
+        user_key("","",AlgorithmVersionDefault)
+    }
+    
+}
 #[repr(u32)]
 #[derive(FromPrimitive, Clone)]
 pub enum AlgorithmVersion {
@@ -60,7 +74,7 @@ pub fn name_for_format(format: u32) -> String {
 
 pub fn site_result(
     site_name: &str,
-    user_key: SpectreUserKey,
+    user_key: UserKey,
     result_type: ResultType,
     algorithm_version: AlgorithmVersion,
 ) -> String {
@@ -82,7 +96,7 @@ pub fn user_key(
     full_name: &str,
     user_password: &str,
     algorithm_version: AlgorithmVersion,
-) -> SpectreUserKey {
+) -> UserKey {
     let m_key = unsafe {
         spectrebind::spectre_user_key(
             CString::new(full_name).unwrap().as_ptr(),
@@ -345,7 +359,24 @@ impl User {
         }
     }
 }
-
+impl Default for User {
+    fn default() -> User {
+        User::create("","",AlgorithmVersionDefault)
+    }
+}
+impl Debug for User {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("spectre::User")
+         .field("x", &self.userName)
+         .field("defaultType", &self.defaultType)
+         .field("keyID", &self.keyID.hex)
+         .field("algorithm", &self.algorithm)
+         .field("identicon", &self.identicon)
+         .field("defaultType", &self.defaultType)
+         .field("defaultType", &self.defaultType)
+         .finish()
+    }
+}
 #[repr(u32)]
 pub enum MarshalFormat {
     flat = spectrebind::SpectreFormatFlat,

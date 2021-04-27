@@ -75,7 +75,7 @@ fn load_custom_styling(){
     provider.load_from_file(&gdk::gio::File::new_for_path(&path));
     gtk::StyleContext::add_provider_for_display(&gdk::Display::default().unwrap(), &provider, 500);
 }
-fn build_pwd_window(app: &gtk::Application) -> (gtk::Window,gtk::StringList) {
+fn build_pwd_window(app: &gtk::Application, user: &spectre::User, user_key: &spectre::UserKey) -> (gtk::Window,gtk::StringList) {
     let window = gtk::Window::new();
     window.set_decorated(false);
     // let store = gtk::gio::ListStore::new( glib::GString::static_type());
@@ -85,6 +85,7 @@ fn build_pwd_window(app: &gtk::Application) -> (gtk::Window,gtk::StringList) {
     let factory = gtk::SignalListItemFactory::new();
     factory.connect_setup(|fact, item|{
         let pwd_box = PasswordListBox::new();
+        pwd_box.setup_user();
         pwd_box.set_site_name("helloWorld.com");
         item.set_child(Some(&pwd_box));
     });
@@ -122,7 +123,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
     let builder = Builder::from_string(glade_src);
 
     let user: Rc<RefCell<Option<spectre::User>>> = Rc::new(RefCell::new(None));
-    let master_key: Rc<RefCell<Option<spectre::SpectreUserKey>>> = Rc::new(RefCell::new(None));
+    let user_key: Rc<RefCell<Option<spectre::UserKey>>> = Rc::new(RefCell::new(None));
     //login Window
     let login_window: Window = builder
         .object("login_window")
@@ -149,47 +150,23 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         .object("identicon")
         .expect("Couldn't get identicon Label");
 
-    // PASSWORD UI
-
-    let pwd_entry_big: Entry = Entry::new();
-    pwd_window.child().unwrap().downcast::<gtk::Box>().ok().unwrap().append(&pwd_entry_big);
-    // builder
-    //     .object("spectre_entry_big")
-    //     .expect("Couldn't get spectre_entry_big Entry");
-    /*
-    let site_list: gtk::ListView = builder
-        .object("site_list")
-        .expect("Couldn't get site_list TreeView");
-    // site_list.set_headers_visible(false);
-    let column = gtk::TreeViewColumn::new();
-    let cell = gtk::CellRendererText::new();
-    column.pack_start(&cell, true);
-    // Association of the view's column with the model's `id` column.
-    column.add_attribute(&cell, "text", 0);
-    // site_list.append_column(&column);
-    */
-    let site_list_store = gtk::StringList::new(&[]);
-
+        
+     let site_list_store = gtk::StringList::new(&[]);
     // LOGIN UI connections
-    {
-        //let spectre_ent if i need the entry afterwards... now it gets moved. so it cannot get accessed afterwards
-        let name = name_entry.clone();
-        let pwd = spectre_entry.clone();
-        spectre_entry.connect_changed(move |spectre_entry| {
-            identicon_label.set_markup(
-                &spectre::identicon(name.text().as_str(), pwd.text().as_str()).to_string(),
-            );
-        });
-    }
     {
         let log_win = login_window.clone();
         let pwd_win = pwd_window.clone();
         let name = name_entry.clone();
         let pwd = spectre_entry.clone();
-        let mut m_k = master_key.clone();
+        let mut m_k = user_key.clone();
         let mut usr = user.clone();
-        let s_store = pwd_list_store.clone();//site_list_store.clone();
+        let s_store = pwd_list_store.clone();
         let windows_clone = windows.clone();
+        spectre_entry.connect_changed(move |spectre_entry| {
+            identicon_label.set_markup(
+                &spectre::identicon(name.text().as_str(), pwd.text().as_str()).to_string(),
+            );
+        });
         spectre_entry.connect_activate(move |_| {
 
             let mut path = dirs::config_dir().unwrap();
@@ -253,6 +230,10 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
     }
     login_window.show();
 
+    // PASSWORD UI
+    let pwd_entry_big: Entry = Entry::new();
+    pwd_window.child().unwrap().downcast::<gtk::Box>().ok().unwrap().append(&pwd_entry_big);
+    
     // PASSWORD UI connections
     {
         let pwd_entry_big_clone = pwd_entry_big.clone();
@@ -290,7 +271,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         */
 
         let pwd_win = pwd_window.clone();
-        let m_k = master_key.clone();
+        let m_k = user_key.clone();
         let usr = user.clone();
         let s_store = site_list_store.clone();
         pwd_entry_big.connect_activate(move |entry| {
