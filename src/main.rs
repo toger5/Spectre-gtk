@@ -77,7 +77,7 @@ fn load_custom_styling(){
 }
 fn build_pwd_window(app: &gtk::Application, user: Rc<RefCell<Option<spectre::User>>>, user_key: Rc<RefCell<Option<spectre::UserKey>>>) -> (gtk::Window,gtk::StringList) {
     let window = gtk::Window::new();
-    window.set_decorated(false);
+    // window.set_decorated(false);
     // let store = gtk::gio::ListStore::new( glib::GString::static_type());
     let string_store = gtk::StringList::new(&[]);
     let model = gtk::NoSelection::new(Some(&string_store));

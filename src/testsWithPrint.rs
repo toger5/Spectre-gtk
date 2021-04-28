@@ -6,15 +6,13 @@ use std::mem;
 use std::rc::Rc;
 
 use gio::ApplicationCommandLineExt;
-
-extern crate gio;
 extern crate gtk;
 extern crate libc;
 
 use gio::prelude::*;
 use gtk::prelude::*;
 
-use super::mpw;
+use super::spectre;
 use gtk::{
     Application, ApplicationWindow, Builder, Button, ButtonsType, DialogFlags, Entry, Label,
     MessageDialog, MessageType, Window,

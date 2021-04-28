@@ -1,4 +1,4 @@
-use std::cell::{RefCell, RefMut};
+use std::{cell::{RefCell, RefMut}};
 use std::rc::Rc;
 use std::env;
 
@@ -56,7 +56,7 @@ mod imp {
             self.parent_constructed(obj);
             obj.set_css_classes(&["view", "top", "bottom"]);
             obj.set_halign(gtk::Align::Center);
-            obj.set_size_request(500, -1);
+            obj.set_size_request(450, -1);
             obj.set_valign(gtk::Align::Start);
             obj.set_orientation(gtk::Orientation::Vertical);
             obj.set_spacing(10);
@@ -125,18 +125,13 @@ mod imp {
             let usr_key_clone = self.user_key.clone();
             let site_name_clone = self.site_name.clone();
             let copy_button_clone = copy_button.clone();
+            let obj_clone = obj.clone();
             copy_button.connect_clicked( move |_| {
                     println!("password should be copied... but is not... yet {:?}", usr_clone.borrow());
-                    let m_k = usr_key_clone.borrow().expect("NO MASTER KEY GOT DAMMIT");
-                    //TODO remove hardcoded password_type
-                    let password_type: spectre::ResultType = spectre::ResultType::TemplateLong;
-                    let pwd = spectre::site_result(
-                        site_name_clone.borrow().as_ref().unwrap().as_str(),
-                        usr_key_clone.clone().borrow().unwrap(),
-                        password_type,
-                        spectre::AlgorithmVersionDefault,
-                    );
-                    copy_button_clone.clipboard().set_text(&pwd);
+                    // let m_k = usr_key_clone.borrow().expect("NO MASTER KEY GOT DAMMIT");
+                    // TODO remove hardcoded password_type
+                    
+                    copy_button_clone.clipboard().set_text(&obj_clone.get_password());
 
                     println!(
                         "pwd for site {} ({:}) saved to clipboard",
@@ -189,5 +184,16 @@ impl PasswordListBox {
         // self_.password_label.borrow().as_ref().unwrap().set_text(spectre::site_result(name, user_key: UserKey, result_type: ResultType, algorithm_version: AlgorithmVersion));
         self_.site_label.borrow().as_ref().unwrap().set_text(name);
         *self_.site_name.borrow_mut() = Some(String::from(name));
+        self_.password_label.borrow().as_ref().unwrap().set_text(&self.get_password());
+    }
+    pub fn get_password(&self) -> String {
+        let self_ = imp::PasswordListBox::from_instance(&self);
+        let password_type: spectre::ResultType = spectre::ResultType::TemplateLong;
+        spectre::site_result(
+            self_.site_name.borrow().as_ref().unwrap().as_str(),
+            *self_.user_key.borrow().as_ref().unwrap(),
+            password_type,
+            spectre::AlgorithmVersionDefault,
+        )
     }
 }
