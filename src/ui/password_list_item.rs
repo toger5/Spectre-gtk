@@ -1,4 +1,5 @@
-use std::cell::RefCell;
+use std::cell::{RefCell, RefMut};
+use std::rc::Rc;
 use std::env;
 
 use gtk::glib;
@@ -23,15 +24,15 @@ mod imp {
         /// and removed in `unparent()`. Therefore, this field could be a `WeakRef<gtk::Widget>`.
         /// Using a strong reference is just a little clearer.
 
-        pub site_name: String,
         pub site_label: RefCell<Option<gtk::Label>>,
         copy_button: RefCell<Option<gtk::Button>>,
         pub password_label: RefCell<Option<gtk::Entry>>,
         password_show_button: RefCell<Option<gtk::Button>>,
         hbox_top: RefCell<Option<gtk::Box>>,
         hbox_bottom: RefCell<Option<gtk::Box>>,
-        pub user: WeakRespectre::User,
-        pub user_key: spectre::UserKey,
+        pub site_name: Rc<RefCell<Option<String>>>,
+        pub user: Rc<RefCell<Option<spectre::User>>>,
+        pub user_key: Rc<RefCell<Option<spectre::UserKey>>>,
     }
 
     #[glib::object_subclass]
@@ -120,6 +121,30 @@ mod imp {
             copy_button.set_valign(gtk::Align::End);
             copy_button.set_size_request(120,-1);
             copy_button.add_css_class("suggested-action");
+            let usr_clone = self.user.clone();
+            let usr_key_clone = self.user_key.clone();
+            let site_name_clone = self.site_name.clone();
+            let copy_button_clone = copy_button.clone();
+            copy_button.connect_clicked( move |_| {
+                    println!("password should be copied... but is not... yet {:?}", usr_clone.borrow());
+                    let m_k = usr_key_clone.borrow().expect("NO MASTER KEY GOT DAMMIT");
+                    //TODO remove hardcoded password_type
+                    let password_type: spectre::ResultType = spectre::ResultType::TemplateLong;
+                    let pwd = spectre::site_result(
+                        site_name_clone.borrow().as_ref().unwrap().as_str(),
+                        usr_key_clone.clone().borrow().unwrap(),
+                        password_type,
+                        spectre::AlgorithmVersionDefault,
+                    );
+                    copy_button_clone.clipboard().set_text(&pwd);
+
+                    println!(
+                        "pwd for site {} ({:}) saved to clipboard",
+                        site_name_clone.clone().borrow().as_ref().unwrap().as_str(),
+                        spectre::c_char_to_string(usr_clone.borrow().unwrap().userName)
+                    );
+                },
+            );
             hbox_bottom.append(&copy_button);
             
             *self.hbox_top.borrow_mut() = Some(hbox_top);
@@ -153,14 +178,16 @@ impl PasswordListBox {
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create PasswordListBox")
     }
-    pub fn setup_user(&self, usr: spectre::User,usr_key: spectre::UserKey){
-        let self_ = imp::PasswordListBox::from_instance(&self);
-        self_.user = usr;
-        self_.user_key = usr_key
+    pub fn setup_user(&self, usr: Rc<RefCell<Option<spectre::User>>>,usr_key: Rc<RefCell<Option<spectre::UserKey>>>){
+        let mut self_ = imp::PasswordListBox::from_instance(&self).clone();
+        self_.user.replace(*usr.borrow());
+        self_.user_key.replace(*usr_key.borrow());
+        //*self_.user.borrow_mut() = *usr.borrow();
     }
     pub fn set_site_name(&self, name: &str) {
         let self_ = imp::PasswordListBox::from_instance(&self);
         // self_.password_label.borrow().as_ref().unwrap().set_text(spectre::site_result(name, user_key: UserKey, result_type: ResultType, algorithm_version: AlgorithmVersion));
         self_.site_label.borrow().as_ref().unwrap().set_text(name);
+        *self_.site_name.borrow_mut() = Some(String::from(name));
     }
 }
