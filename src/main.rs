@@ -6,9 +6,9 @@ extern crate num_derive;
 
 use std::cell::{RefCell, RefMut};
 use std::collections::HashMap;
+use std::rc::Rc;
 use std::ffi::{CStr, CString};
 use std::mem;
-use std::rc::Rc;
 extern crate gdk;
 extern crate gtk;
 extern crate libc;
@@ -75,7 +75,7 @@ fn load_custom_styling(){
     provider.load_from_file(&gdk::gio::File::new_for_path(&path));
     gtk::StyleContext::add_provider_for_display(&gdk::Display::default().unwrap(), &provider, 500);
 }
-fn build_pwd_window(app: &gtk::Application, user: &spectre::User, user_key: &spectre::UserKey) -> (gtk::Window,gtk::StringList) {
+fn build_pwd_window(app: &gtk::Application, user: Rc<RefCell<Option<spectre::User>>>, user_key: Rc<RefCell<Option<spectre::UserKey>>>) -> (gtk::Window,gtk::StringList) {
     let window = gtk::Window::new();
     window.set_decorated(false);
     // let store = gtk::gio::ListStore::new( glib::GString::static_type());
@@ -83,12 +83,16 @@ fn build_pwd_window(app: &gtk::Application, user: &spectre::User, user_key: &spe
     let model = gtk::NoSelection::new(Some(&string_store));
 
     let factory = gtk::SignalListItemFactory::new();
-    factory.connect_setup(|fact, item|{
-        let pwd_box = PasswordListBox::new();
-        pwd_box.setup_user();
-        pwd_box.set_site_name("helloWorld.com");
-        item.set_child(Some(&pwd_box));
-    });
+    {
+        let usr_clone = user.clone();
+        let usr_key_clone = user_key.clone();
+        factory.connect_setup(move |fact, item|{
+            let pwd_box = PasswordListBox::new();
+            pwd_box.setup_user(usr_clone.clone(), usr_key_clone.clone());
+            pwd_box.set_site_name("helloWorld.com");
+            item.set_child(Some(&pwd_box));
+        });
+    }
     factory.connect_bind(|fact, item|{
         // println!("{}",item);
         // let pwd_box = PasswordListBox::new();
@@ -135,7 +139,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         .insert("login_window".to_owned(), login_window.clone());
 
     //pwd Window
-    let (pwd_window, pwd_list_store) = build_pwd_window(application);
+    let (pwd_window, pwd_list_store) = build_pwd_window(application,user.clone(),user_key.clone());
     // let pwd_window: gtk::Window = builder.object("password_window").unwrap();
     application.add_window(&pwd_window);
 
@@ -162,11 +166,13 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         let mut usr = user.clone();
         let s_store = pwd_list_store.clone();
         let windows_clone = windows.clone();
-        spectre_entry.connect_changed(move |spectre_entry| {
+        spectre_entry.connect_changed(move |_| {
             identicon_label.set_markup(
                 &spectre::identicon(name.text().as_str(), pwd.text().as_str()).to_string(),
             );
         });
+        let name = name_entry.clone();
+        let pwd = spectre_entry.clone();
         spectre_entry.connect_activate(move |_| {
 
             let mut path = dirs::config_dir().unwrap();

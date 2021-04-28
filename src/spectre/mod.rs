@@ -16,12 +16,12 @@ impl Debug for UserKey{
         .field("algorithm", &self.algorithm)
         .finish()
     }
+
 }
 impl Default for UserKey{
     fn default() -> UserKey{
         user_key("","",AlgorithmVersionDefault)
     }
-    
 }
 #[repr(u32)]
 #[derive(FromPrimitive, Clone)]
