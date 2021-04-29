@@ -1,11 +1,11 @@
-use std::{cell::{RefCell, RefMut}};
-use std::rc::Rc;
+use std::cell::{RefCell, RefMut};
 use std::env;
+use std::rc::Rc;
 
+use crate::spectre;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
-use crate::spectre;
 mod imp {
     use super::*;
     // use gtk::subclass::prelude::*;
@@ -23,7 +23,6 @@ mod imp {
         /// Widgets automatically store strong references to their children, added in `set_parent()`
         /// and removed in `unparent()`. Therefore, this field could be a `WeakRef<gtk::Widget>`.
         /// Using a strong reference is just a little clearer.
-
         pub site_label: RefCell<Option<gtk::Label>>,
         copy_button: RefCell<Option<gtk::Button>>,
         pub password_label: RefCell<Option<gtk::Entry>>,
@@ -63,7 +62,7 @@ mod imp {
 
             let hbox_top = gtk::Box::new(gtk::Orientation::Horizontal, 30);
             obj.append(&hbox_top);
-            
+
             let hbox_bottom = gtk::Box::new(gtk::Orientation::Horizontal, 30);
             obj.append(&hbox_bottom);
 
@@ -71,10 +70,10 @@ mod imp {
             site_label.set_hexpand(true);
             site_label.add_css_class("site-name-label");
             hbox_top.append(&site_label);
-            
+
             let hbox_bottom_left = gtk::Box::new(gtk::Orientation::Vertical, 0);
             hbox_bottom.append(&hbox_bottom_left);
-            
+
             let password_label = gtk::Entry::new();
             password_label.set_hexpand(true);
             password_label.set_text("Haga0.RenoBetu");
@@ -87,7 +86,7 @@ mod imp {
             let hbox_bottom_left_bottom = gtk::Box::new(gtk::Orientation::Horizontal, 20);
             hbox_bottom_left.append(&hbox_bottom_left_bottom);
 
-            let hbox_linked = gtk::Box::new(gtk::Orientation::Horizontal,0);
+            let hbox_linked = gtk::Box::new(gtk::Orientation::Horizontal, 0);
             hbox_linked.add_css_class("linked");
             let password_short_button = gtk::Button::with_label("short");
             password_short_button.add_css_class("tiny");
@@ -116,32 +115,15 @@ mod imp {
             );
             hbox_bottom_left_bottom.append(&password_show_button);
 
-
             let copy_button = gtk::Button::with_label("Copy");
             copy_button.set_valign(gtk::Align::End);
-            copy_button.set_size_request(120,-1);
+            copy_button.set_size_request(120, -1);
             copy_button.add_css_class("suggested-action");
-            let usr_clone = self.user.clone();
-            let usr_key_clone = self.user_key.clone();
-            let site_name_clone = self.site_name.clone();
-            let copy_button_clone = copy_button.clone();
-            let obj_clone = obj.clone();
-            copy_button.connect_clicked( move |_| {
-                    println!("password should be copied... but is not... yet {:?}", usr_clone.borrow());
-                    // let m_k = usr_key_clone.borrow().expect("NO MASTER KEY GOT DAMMIT");
-                    // TODO remove hardcoded password_type
-                    
-                    copy_button_clone.clipboard().set_text(&obj_clone.get_password());
-
-                    println!(
-                        "pwd for site {} ({:}) saved to clipboard",
-                        site_name_clone.clone().borrow().as_ref().unwrap().as_str(),
-                        spectre::c_char_to_string(usr_clone.borrow().unwrap().userName)
-                    );
-                },
-            );
+            copy_button.connect_clicked(glib::clone!(@weak obj, @weak copy_button => move |_| {
+                copy_button.clipboard().set_text(&obj.get_password())
+            }));
             hbox_bottom.append(&copy_button);
-            
+
             *self.hbox_top.borrow_mut() = Some(hbox_top);
             *self.hbox_bottom.borrow_mut() = Some(hbox_bottom);
             *self.site_label.borrow_mut() = Some(site_label);
@@ -173,21 +155,35 @@ impl PasswordListBox {
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create PasswordListBox")
     }
-    pub fn setup_user(&self, usr: Rc<RefCell<Option<spectre::User>>>,usr_key: Rc<RefCell<Option<spectre::UserKey>>>){
+
+    pub fn setup_user(
+        &self,
+        usr: Rc<RefCell<Option<spectre::User>>>,
+        usr_key: Rc<RefCell<Option<spectre::UserKey>>>,
+    ) {
         let mut self_ = imp::PasswordListBox::from_instance(&self).clone();
         self_.user.replace(*usr.borrow());
         self_.user_key.replace(*usr_key.borrow());
         //*self_.user.borrow_mut() = *usr.borrow();
     }
+
     pub fn set_site_name(&self, name: &str) {
         let self_ = imp::PasswordListBox::from_instance(&self);
         // self_.password_label.borrow().as_ref().unwrap().set_text(spectre::site_result(name, user_key: UserKey, result_type: ResultType, algorithm_version: AlgorithmVersion));
         self_.site_label.borrow().as_ref().unwrap().set_text(name);
         *self_.site_name.borrow_mut() = Some(String::from(name));
-        self_.password_label.borrow().as_ref().unwrap().set_text(&self.get_password());
+        self_
+            .password_label
+            .borrow()
+            .as_ref()
+            .unwrap()
+            .set_text(&self.get_password());
     }
+
     pub fn get_password(&self) -> String {
         let self_ = imp::PasswordListBox::from_instance(&self);
+
+        // TODO remove hardcoded password_type
         let password_type: spectre::ResultType = spectre::ResultType::TemplateLong;
         spectre::site_result(
             self_.site_name.borrow().as_ref().unwrap().as_str(),
