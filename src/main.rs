@@ -12,6 +12,10 @@ use std::rc::Rc;
 extern crate gdk;
 extern crate gtk;
 extern crate libc;
+use gdk::gio;
+use gio::prelude::*;
+use glib::prelude::*;
+use glib::{object::Object, FromVariant, GString, ToVariant, Variant};
 use gtk::prelude::*;
 use std::fs::File;
 // use glib;
@@ -24,7 +28,8 @@ use std::time::SystemTime;
 
 mod ui;
 
-use ui::password_list_item::PasswordListBox;
+use ui::password_list_box::PasswordListBox;
+use ui::password_search_box::PasswordSearchBox;
 use ui::spectre_app::SpectreApp;
 
 mod paths;
@@ -80,8 +85,12 @@ fn build_pwd_window(
 ) -> (gtk::Window, gtk::StringList) {
     let window = gtk::Window::new();
     // window.set_decorated(false);
-    // let store = gtk::gio::ListStore::new( glib::GString::static_type());
     let string_store = gtk::StringList::new(&[]);
+    // let string_store = gio::ListStore::new( glib::GString::static_type());
+    // let string_store = gio::ListStore::new(glib::Type::OBJECT);
+    // let custom_obj = Object::new::<Object>(]);
+    string_store.append("___search");
+    // string_store.append("___pwd_preview");
     let model = gtk::NoSelection::new(Some(&string_store));
 
     let factory = gtk::SignalListItemFactory::new();
@@ -89,19 +98,22 @@ fn build_pwd_window(
         let usr_clone = user.clone();
         let usr_key_clone = user_key.clone();
         factory.connect_setup(move |fact, item| {
+            let stack = gtk::StackBuilder::new().vhomogeneous(false).build();
             let pwd_box = PasswordListBox::new();
             pwd_box.setup_user(usr_clone.clone(), usr_key_clone.clone());
-            pwd_box.set_site_name("helloWorld.com");
-            item.set_child(Some(&pwd_box));
+            // pwd_box.set_site_name("helloWorld.com");
+
+            let search_box = PasswordSearchBox::new();
+            // pwd_box.setup_user(usr_clone.clone(), usr_key_clone.clone());
+            // pwd_box.set_site_name("helloWorld.com");
+            // let pwd_preview = gtk::Label::new(None);
+            stack.add_named(&search_box, Some("search"));
+            stack.add_named(&pwd_box, Some("pwd"));
+            // stack.add_named(&search_box, Some("pwd_preview"));
+            item.set_child(Some(&stack));
         });
     }
     factory.connect_bind(|fact, item| {
-        let pwd_box = item
-            .child()
-            .expect("no child found in password list item")
-            .downcast::<PasswordListBox>()
-            .ok()
-            .unwrap();
         let prop = item
             .item()
             .unwrap()
@@ -112,7 +124,28 @@ fn build_pwd_window(
             .ok()
             .unwrap()
             .unwrap();
-        pwd_box.set_site_name(&prop);
+        let stack = item
+            .child()
+            .expect("no child found in password list item")
+            .downcast::<gtk::Stack>()
+            .ok()
+            .unwrap();
+        // let pwd_box = stack.child_by_name("search");
+        let visible_child = if prop == "___search" {
+            "search"
+        } else {
+            let pwd_box = stack
+                .child_by_name("pwd")
+                .expect("no child found in password list item")
+                .downcast::<PasswordListBox>()
+                .ok()
+                .unwrap();
+
+            pwd_box.set_site_name(&prop);
+            "pwd"
+        };
+
+        stack.set_visible_child_name(visible_child);
     });
 
     let list = gtk::ListView::new(Some(&model), Some(&factory));
@@ -121,6 +154,7 @@ fn build_pwd_window(
     sw.set_min_content_height(300);
     sw.set_min_content_width(500);
     sw.set_propagate_natural_width(true);
+    sw.set_propagate_natural_height(true);
     let b = gtk::Box::new(gtk::Orientation::Vertical, 10);
     b.append(&sw);
     window.set_child(Some(&b));
@@ -162,7 +196,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         .object("identicon")
         .expect("Couldn't get identicon Label");
 
-    let site_list_store = gtk::StringList::new(&[]);
+    // let site_list_store = gtk::StringList::new(&[]);
     // LOGIN UI connections
     {
         let log_win = login_window.clone();
@@ -252,7 +286,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         .ok()
         .unwrap()
         .append(&pwd_entry_big);
-
+    pwd_entry_big.hide();
     // PASSWORD UI connections
     {
         let pwd_entry_big_clone = pwd_entry_big.clone();
@@ -289,7 +323,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         });
         */
 
-        pwd_entry_big.connect_activate(glib::clone!( @weak user, @weak user_key, @weak pwd_window, @weak site_list_store => move |entry| {
+        pwd_entry_big.connect_activate(glib::clone!( @weak user, @weak user_key, @weak pwd_window, @weak pwd_list_store => move |entry| {
             // log_win.hide();
             let user_key = user_key.borrow().expect("NO MASTER KEY GOT DAMMIT");
             let site_name = entry.text();
@@ -336,7 +370,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
 
                 // reload site list:
                 fill_site_list(
-                    &site_list_store,
+                    &pwd_list_store,
                     &user.borrow().expect("no User while filling site list"),
                 )
             }
@@ -355,6 +389,7 @@ fn fill_site_list(store: &gtk::StringList, user: &spectre::User) {
             let site_name: String = (*site).get_name(); //(*site).get_name();c
                                                         // print!("{}",site_name);
             store.append(&site_name);
+            // store.append(site_name);
         }
     }
 }
