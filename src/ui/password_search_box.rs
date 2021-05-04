@@ -14,8 +14,9 @@ mod imp {
     pub struct PasswordSearchBox {
         pub password_label: RefCell<Option<gtk::Label>>,
         pub site_entry: RefCell<Option<gtk::Entry>>,
-        create_copy_button: RefCell<Option<gtk::Button>>,
+        pub create_copy_button: RefCell<Option<gtk::Button>>,
         pub user: Rc<RefCell<Option<spectre::User>>>,
+        //TODO rethink when the pwd is shown...
         pub password_show_button: RefCell<Option<gtk::ToggleButton>>,
         pub user_key: Rc<RefCell<Option<spectre::UserKey>>>,
         pub hbox_bottom: RefCell<Option<gtk::Box>>,
@@ -43,7 +44,7 @@ mod imp {
             obj.set_size_request(450, -1);
             obj.set_valign(Align::Start);
             obj.set_orientation(Orientation::Vertical);
-            obj.set_spacing(10);
+            obj.set_spacing(20);
             obj.set_margin_bottom(50);
             obj.set_margin_top(50);
 
@@ -59,19 +60,20 @@ mod imp {
             //     .build();
             let password_label = gtk::LabelBuilder::new()
                 .hexpand_set(true)
+                .halign(Align::Fill)
                 .label("Password")
                 .css_classes(vec![String::from("monospace"), String::from("pwd-preview")])
                 .build();
             obj.append(&password_label);
 
-            let hbox_top = Box::new(Orientation::Horizontal, 30);
+            let hbox_top = Box::new(Orientation::Horizontal, 15);
             obj.append(&hbox_top);
 
             let hbox_bottom = gtk::Box::new(gtk::Orientation::Horizontal, 30);
             obj.append(&hbox_bottom);
 
             let site_entry = EntryBuilder::new()
-                .halign(Align::Start)
+                .halign(Align::Fill)
                 .css_classes(vec![String::from("site-name-entry"), String::from("pwd-preview")])
                 .hexpand(true)
                 .build();
@@ -104,6 +106,7 @@ mod imp {
             let create_copy_button = gtk::ButtonBuilder::new()
                 .valign(gtk::Align::End)
                 .vexpand(true)
+                .valign(Align::Fill)
                 .width_request(120)
                 .label("Copy")
                 .sensitive(false)
@@ -162,19 +165,20 @@ impl PasswordSearchBox {
     fn connect_events(&self) {
         let self_ = imp::PasswordSearchBox::from_instance(&self);
         let self_clone = self.clone();
-        let password_label = self_.password_label.borrow().as_ref().unwrap().clone();
-        self_.site_entry.borrow().as_ref().unwrap().connect_changed( move |_| {
-            password_label.set_text(self_clone.get_password().as_str());
+        let create_copy_button = self_.create_copy_button.borrow().as_ref().unwrap().clone();
+        // let password_label = self_.password_label.borrow().as_ref().unwrap().clone();
+        self_.site_entry.borrow().as_ref().unwrap().connect_changed(move |entry| {
+            self_clone.update_password_label();
+            create_copy_button.set_sensitive(entry.text().len() > 0);
         });
 
         let self_clone = self.clone();
         let password_show_button = self_.password_show_button.borrow().as_ref().unwrap().clone();
-        // let password_label = self_.password_label.borrow().as_ref().unwrap().clone();
         password_show_button.connect_toggled(move |button| {
-            self_clone.update_password_label()
+            self_clone.update_password_label();
         });
     }
-    fn update_password_label(&self){
+    fn update_password_label(&self) {
         let self_ = imp::PasswordSearchBox::from_instance(&self);
         let self_clone = self.clone();
         let password_label = self_.password_label.borrow().as_ref().unwrap().clone();
@@ -192,9 +196,11 @@ impl PasswordSearchBox {
         // TODO remove hardcoded password_type
         let password_type: spectre::ResultType = spectre::ResultType::TemplateLong;
         let password_show_button = self_.password_show_button.borrow().as_ref().unwrap().clone();
-        if password_show_button.is_active() {return String::from("Hidden");}
+        if password_show_button.is_active() {
+            return String::from("Hidden");
+        }
         let site_entry = self_.site_entry.borrow().as_ref().unwrap().clone();
-        if site_entry.text().len()>0 {
+        if site_entry.text().len() > 0 {
             spectre::site_result(
                 site_entry.text().as_str(),
                 *self_.user_key.borrow().as_ref().unwrap(),
