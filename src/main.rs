@@ -142,20 +142,13 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                 }
                 login(user.clone(),&log_win,&name_entry,&spectre_entry,&application, windows.clone());
             }else{
-                // let dialog = gtk::MessageDialog::new( 
-                //     Some(&log_win),
-                //     DialogFlags::MODAL,
-                //     MessageType::Question,
-                //     ButtonsType::YesNo,
-                //     "There is no user with that name.\n Do you want to create a new User file?");
-                // dialog.set_secondary_text(Some(&format!("A new file will be created:\nat: {}", path.to_str().unwrap())));
-                let dialog = gtk::MessageDialogBuilder::new()
-                .text("There is no user with that name.\n Do you want to create a new User file?")
-                .message_type(MessageType::Question)
-                .buttons(ButtonsType::YesNo)
-                .modal(true)
-                .destroy_with_parent(true)
-                .secondary_text(format!("A new file will be created:\nat: {}", path.to_str().unwrap()).as_str()).build();
+                let dialog = gtk::MessageDialog::new( 
+                    Some(&log_win),
+                    DialogFlags::MODAL,
+                    MessageType::Question,
+                    ButtonsType::YesNo,
+                    "There is no user with that name.\n Do you want to create a new User file?");
+                dialog.set_secondary_text(Some(&format!("A new file will be created:\nat: {}", path.to_str().unwrap())));
                 dialog.connect_response(
                     glib::clone!(@strong user,@weak log_win,@weak name_entry,@weak spectre_entry,@weak application,@weak windows => move |dialog, response| {
                     println!("{}",response);
@@ -166,31 +159,13 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                             spectre_entry.text().as_str(),
                             spectre::AlgorithmVersionDefault,
                             ));
+                            dialog.emit_close();
                             login(user.clone(), &log_win, &name_entry, &spectre_entry, &application, windows.clone());
                         },
                         gtk::ResponseType::No => dialog.close(),
                         default => println!("Message Dialog dismissed"),
                     };
                 }));
-
-            // let a = 10;
-
-            // dialog.connect_response(glib::clone!(@strong user, @weak log_win => move |dialog,response| {
-            //     println!("{}",response);
-            //         match response {
-            //             gtk::ResponseType::Yes => {
-            //                 println!("Yes");
-            //                 // *user.borrow_mut() = Some(spectre::User::create(
-            //                 // name_entry.text().as_str(),
-            //                 // spectre_entry.text().as_str(),
-            //                 // spectre::AlgorithmVersionDefault,
-            //                 // ));
-            //                 // login(user.clone(), &log_win, &name_entry, &spectre_entry, &application, windows.clone());
-            //             },
-            //             gtk::ResponseType::No => {println!("No");},//dialog.close()
-            //             default => println!("other repsonse"),
-            //         };
-            // }));
             dialog.show();
             }
         }));
@@ -304,4 +279,3 @@ mod spectre;
 
 #[cfg(test)]
 mod testsWithPrint;
-
