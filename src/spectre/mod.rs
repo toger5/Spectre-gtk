@@ -147,7 +147,7 @@ pub struct Identicon {
 }
 
 impl Identicon {
-    pub fn to_string(&self) -> String {
+    pub fn to_markup_string(&self) -> String {
         format!(
             "<span foreground='{}'>{}{}{}{}</span>",
             self.color.to_color_code(),

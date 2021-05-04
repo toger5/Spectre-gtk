@@ -78,88 +78,6 @@ fn load_custom_styling() {
     provider.load_from_file(&gdk::gio::File::new_for_path(&path));
     gtk::StyleContext::add_provider_for_display(&gdk::Display::default().unwrap(), &provider, 500);
 }
-fn build_pwd_window(
-    app: &gtk::Application,
-    user: Rc<RefCell<Option<spectre::User>>>,
-    user_key: Rc<RefCell<Option<spectre::UserKey>>>,
-) -> (gtk::Window, gtk::StringList) {
-    let window = gtk::Window::new();
-    // window.set_decorated(false);
-    let string_store = gtk::StringList::new(&[]);
-    // let string_store = gio::ListStore::new( glib::GString::static_type());
-    // let string_store = gio::ListStore::new(glib::Type::OBJECT);
-    // let custom_obj = Object::new::<Object>(]);
-    string_store.append("___search");
-    // string_store.append("___pwd_preview");
-    let model = gtk::NoSelection::new(Some(&string_store));
-
-    let factory = gtk::SignalListItemFactory::new();
-    {
-        let usr_clone = user.clone();
-        let usr_key_clone = user_key.clone();
-        factory.connect_setup(move |fact, item| {
-            let stack = gtk::StackBuilder::new().vhomogeneous(false).build();
-            let pwd_box = PasswordListBox::new();
-            pwd_box.setup_user(usr_clone.clone(), usr_key_clone.clone());
-            // pwd_box.set_site_name("helloWorld.com");
-
-            let search_box = PasswordSearchBox::new();
-            // pwd_box.setup_user(usr_clone.clone(), usr_key_clone.clone());
-            // pwd_box.set_site_name("helloWorld.com");
-            // let pwd_preview = gtk::Label::new(None);
-            stack.add_named(&search_box, Some("search"));
-            stack.add_named(&pwd_box, Some("pwd"));
-            // stack.add_named(&search_box, Some("pwd_preview"));
-            item.set_child(Some(&stack));
-        });
-    }
-    factory.connect_bind(|fact, item| {
-        let prop = item
-            .item()
-            .unwrap()
-            .property("string")
-            .ok()
-            .unwrap()
-            .get::<String>()
-            .ok()
-            .unwrap()
-            .unwrap();
-        let stack = item
-            .child()
-            .expect("no child found in password list item")
-            .downcast::<gtk::Stack>()
-            .ok()
-            .unwrap();
-        // let pwd_box = stack.child_by_name("search");
-        let visible_child = if prop == "___search" {
-            "search"
-        } else {
-            let pwd_box = stack
-                .child_by_name("pwd")
-                .expect("no child found in password list item")
-                .downcast::<PasswordListBox>()
-                .ok()
-                .unwrap();
-
-            pwd_box.set_site_name(&prop);
-            "pwd"
-        };
-
-        stack.set_visible_child_name(visible_child);
-    });
-
-    let list = gtk::ListView::new(Some(&model), Some(&factory));
-    let sw = gtk::ScrolledWindow::new();
-    sw.set_child(Some(&list));
-    sw.set_min_content_height(300);
-    sw.set_min_content_width(500);
-    sw.set_propagate_natural_width(true);
-    sw.set_propagate_natural_height(true);
-    let b = gtk::Box::new(gtk::Orientation::Vertical, 10);
-    b.append(&sw);
-    window.set_child(Some(&b));
-    (window, string_store)
-}
 
 fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<String, Window>>>) {
     // const version: spectre::AlgorithmVersion = AlgorithmVersionDefault;
@@ -167,8 +85,8 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
     let glade_src = include_str!("gtk_ui_files/windows.ui");
     let builder = Builder::from_string(glade_src);
 
-    let user: Rc<RefCell<Option<spectre::User>>> = Rc::new(RefCell::new(None));
-    let user_key: Rc<RefCell<Option<spectre::UserKey>>> = Rc::new(RefCell::new(None));
+    // let user: Rc<RefCell<Option<spectre::User>>> = Rc::new(RefCell::new(None));
+    // let user_key: Rc<RefCell<Option<spectre::UserKey>>> = Rc::new(RefCell::new(None));
     //login Window
     let login_window: Window = builder
         .object("login_window")
@@ -180,10 +98,10 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         .insert("login_window".to_owned(), login_window.clone());
 
     //pwd Window
-    let (pwd_window, pwd_list_store) =
-        build_pwd_window(application, user.clone(), user_key.clone());
+    // let (pwd_window, pwd_list_store) =
+    //     build_pwd_window(application, user.clone(), user_key.clone());
     // let pwd_window: gtk::Window = builder.object("password_window").unwrap();
-    application.add_window(&pwd_window);
+    
 
     // LOGIN UI
     let name_entry: Entry = builder
@@ -200,30 +118,33 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
     // LOGIN UI connections
     {
         let log_win = login_window.clone();
-        let pwd_win = pwd_window.clone();
+        // let pwd_win = pwd_window.clone();
         let name = name_entry.clone();
         let pwd = spectre_entry.clone();
-        let mut m_k = user_key.clone();
-        let mut usr = user.clone();
-        let s_store = pwd_list_store.clone();
+        
+        // let s_store = pwd_list_store.clone();
         let windows_clone = windows.clone();
         spectre_entry.connect_changed(move |_| {
             identicon_label.set_markup(
-                &spectre::identicon(name.text().as_str(), pwd.text().as_str()).to_string(),
+                &spectre::identicon(name.text().as_str(), pwd.text().as_str()).to_markup_string(),
             );
         });
-        let name = name_entry.clone();
-        let pwd = spectre_entry.clone();
-        spectre_entry.connect_activate(move |_| {
-
+        // let name = name_entry.clone();
+        // let pwd = spectre_entry.clone();
+        // let app_clone = application.clone();
+        spectre_entry.connect_activate(glib::clone!{@weak application, @weak spectre_entry, @weak name_entry => move |_| {
+            // let mut m_k = user_key.clone();
+            // let mut usr = user.clone();
+            let user: Rc<RefCell<Option<spectre::User>>> = Rc::new(RefCell::new(None));
+            // let user_key: Rc<RefCell<Option<spectre::UserKey>>> = Rc::new(RefCell::new(None));
             let mut path = dirs::config_dir().unwrap();
-            path.push(format!("{}", name.text().as_str()));
+            path.push(format!("{}", name_entry.text().as_str()));
             path.set_extension("mpsites");
 
             // check if user already exists:
             if path.exists() {
-                match spectre::User::authenticate(&path, pwd.text().as_str().to_string()){
-                    Ok(user) => *usr.borrow_mut() = Some(user),
+                match spectre::User::authenticate(&path, spectre_entry.text().as_str().to_string()){
+                    Ok(user_ok) => *user.borrow_mut() = Some(user_ok),
                     Err(err) => {
                         match err {
                             spectre::FileMarshalReadError::File(io_err) => panic!(io_err),
@@ -246,38 +167,43 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
             }else{
                 // TODO only create new user when yes is chosen
                 let dialog = MessageDialog::new(Some(&log_win),DialogFlags::empty(),MessageType::Error, ButtonsType::YesNo, "Are u suuure? \n (About creating a new user.)").show();
-                *usr.borrow_mut() = Some(spectre::User::create(
-                    name.text().as_str(),
-                    pwd.text().as_str(),
+                *user.borrow_mut() = Some(spectre::User::create(
+                    name_entry.text().as_str(),
+                    spectre_entry.text().as_str(),
                     spectre::AlgorithmVersionDefault,
                 ));
             }
-            *m_k.borrow_mut() = Some(spectre::user_key(
-                name.text().as_str(),
-                pwd.text().as_str(),
-                spectre::AlgorithmVersionDefault,
-            ));
-            if let Some(user) = *usr.borrow() {
+            
+            if let Some(_) = *user.borrow() {
                 log_win.hide();
                 // pwd_win.hide_on_delete();
-                pwd_win.show();
+                // let user_rc = Rc::new(RefCell::new(user));
+                // let user_key_rc = Rc::new(RefCell::new(user_key));
+                let user_key = Some(spectre::user_key(
+                    name_entry.text().as_str(),
+                    spectre_entry.text().as_str(),
+                    spectre::AlgorithmVersionDefault,
+                ));
+                let pwd_window = ui::password_window::PasswordWindow::new(user.clone(), Rc::new(RefCell::new(user_key)));
+                application.add_window(&pwd_window);
+                pwd_window.show();
                 // pwd_win.fullscreen();
                 // pwd_win.set_default_size(500,500);
                 // pwd_win.set_resizable(false);
                 windows_clone
                     .borrow_mut()
-                    .insert("pwd_window".to_owned(), pwd_win.clone());
-                fill_site_list(
-                    &s_store,
-                    &user,
-                );
-                println!("{:?}", user.userName);
-            }
-        });
+                    .insert("pwd_window".to_owned(), pwd_window.clone().upcast::<gtk::Window>());
+                pwd_window.fill_site_list();
+                println!("{:?}", user.borrow().unwrap().userName);
+            };
+        }});
     }
     login_window.show();
 
     // PASSWORD UI
+
+    /*-------------------------------------------------------------------------------------------------------------------
+
     let pwd_entry_big: Entry = Entry::new();
     pwd_window
         .child()
@@ -376,22 +302,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
             }
         }));
     }
-}
-
-fn fill_site_list(store: &gtk::StringList, user: &spectre::User) {
-    // print!("sites:\n");
-    let entriesfile = user.get_sites();
-    // store.clear();
-    for site in entriesfile {
-        //user.get_sites() {
-
-        unsafe {
-            let site_name: String = (*site).get_name(); //(*site).get_name();c
-                                                        // print!("{}",site_name);
-            store.append(&site_name);
-            // store.append(site_name);
-        }
-    }
+    ------------------------------------*/
 }
 
 mod spectre;
