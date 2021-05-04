@@ -38,7 +38,7 @@ mod config;
 fn main() {
     // Current App
     let windows: Rc<RefCell<HashMap<String, Window>>> = Rc::new(RefCell::new(HashMap::new()));
-    let application = Application::new(Some("timo.gtk.spectre"), Default::default());
+    let application = Application::new(Some("com.github.spectre"), Default::default());
     {
         let windows_clone = windows.clone();
         application.connect_activate(move |app| {
