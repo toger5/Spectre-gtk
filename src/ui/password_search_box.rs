@@ -58,7 +58,7 @@ mod imp {
             //     .build();
             let password_label = gtk::LabelBuilder::new()
                 .hexpand_set(true)
-                .label("Haga0.RenoBetu")
+                .label("Password")
                 .css_classes(vec![String::from("monospace"),String::from("pwd-preview")]).build();
             
             obj.append(&password_label);

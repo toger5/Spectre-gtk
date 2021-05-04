@@ -33,6 +33,7 @@ use ui::password_search_box::PasswordSearchBox;
 use ui::spectre_app::SpectreApp;
 
 mod paths;
+mod config;
 
 fn main() {
     // Current App
@@ -128,8 +129,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
             // let mut usr = user.clone();
             let user: Rc<RefCell<Option<spectre::User>>> = Rc::new(RefCell::new(None));
             // let user_key: Rc<RefCell<Option<spectre::UserKey>>> = Rc::new(RefCell::new(None));
-            let mut path = dirs::home_dir().unwrap();
-            path.push("spectre.d");
+            let mut path = crate::config::get_save_path();
             // let mut path = dirs::data_dir().unwrap();
             path.push(format!("{}", name_entry.text().as_str()));
             path.set_extension("mpsites");
@@ -160,6 +160,13 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                             spectre::AlgorithmVersionDefault,
                             ));
                             dialog.emit_close();
+                            match spectre::marshal_write_to_file(
+                                spectre::MarshalFormat::flat,
+                                user.borrow().unwrap(),
+                            ) {
+                                Ok(a) => println!("succsesfully wrote to file"),
+                                Err(r) => println!("err {}", r),
+                            }
                             login(user.clone(), &log_win, &name_entry, &spectre_entry, &application, windows.clone());
                         },
                         gtk::ResponseType::No => dialog.close(),

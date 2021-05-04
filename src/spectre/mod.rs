@@ -439,7 +439,7 @@ fn marshal_read_from_string(
 }
 
 pub fn marshal_write_to_file(out_format: MarshalFormat, mut user: User) -> std::io::Result<()> {
-    let mut path = dirs::config_dir().unwrap();
+    let mut path = crate::config::get_save_path();
     path.push(format!("{}", c_char_to_string(user.userName)));
     path.set_extension("mpsites");
     let mut file = File::create(path)?;
