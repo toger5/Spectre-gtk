@@ -6,6 +6,7 @@ pub struct PasswordWindow {
     pub user_key: Rc<RefCell<Option<spectre::UserKey>>>,
     pub string_store: gtk::StringList,
     pub list_view: gtk::ListView,
+    pub entry_site_name: Option<String>,
 }
 
 #[glib::object_subclass]
@@ -17,7 +18,11 @@ impl ObjectSubclass for PasswordWindow {
     fn new() -> Self {
         Self {
             string_store: gtk::StringList::new(&[]),
-            list_view: gtk::ListView::new(Option::<&gtk::NoSelection>::None,Option::<&gtk::SignalListItemFactory>::None),
+            list_view: gtk::ListView::new(
+                Option::<&gtk::NoSelection>::None,
+                Option::<&gtk::SignalListItemFactory>::None,
+            ),
+            entry_site_name: Option::<String>::None,
             user: Rc::new(RefCell::new(None)),
             user_key: Rc::new(RefCell::new(None)),
         }
@@ -26,7 +31,7 @@ impl ObjectSubclass for PasswordWindow {
 impl ObjectImpl for PasswordWindow {
     fn constructed(&self, obj: &Self::Type) {
         self.parent_constructed(obj);
-        obj.set_default_size(550,800);
+        obj.set_default_size(550, 800);
 
         let sw = gtk::ScrolledWindow::new();
         sw.set_child(Some(&self.list_view));
@@ -42,7 +47,12 @@ impl ObjectImpl for PasswordWindow {
         //TODO unparent childs
     }
 }
-impl WidgetImpl for PasswordWindow {}
+impl WidgetImpl for PasswordWindow {
+    // fn show(&self, obj: &Self::Type){
+    //     self.parent_show(obj);
+    //     // obj.entry_site_name.set = "";
+    // }
+}
 impl WindowImpl for PasswordWindow {
     fn close_request(&self, window: &Self::Type) -> glib::signal::Inhibit {
         self.parent_close_request(window)
