@@ -1116,6 +1116,7 @@ dependencies = [
  "num",
  "num-derive",
  "num-traits",
+ "once_cell",
  "pango 0.9.1",
 ]
 
