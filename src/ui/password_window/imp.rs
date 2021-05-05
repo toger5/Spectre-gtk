@@ -7,6 +7,8 @@ pub struct PasswordWindow {
     pub string_store: gtk::StringList,
     pub list_view: gtk::ListView,
     pub entry_site_name: Option<String>,
+    // pub signal_search_changed: Rc<RefCell<Option<glib::signal::SignalHandlerId>>>,
+    // pub signal_copy_create_activated: Rc<RefCell<Option<glib::signal::SignalHandlerId>>>,
 }
 
 #[glib::object_subclass]
@@ -25,6 +27,7 @@ impl ObjectSubclass for PasswordWindow {
             entry_site_name: Option::<String>::None,
             user: Rc::new(RefCell::new(None)),
             user_key: Rc::new(RefCell::new(None)),
+            // signal_search_changed: Rc::new(RefCell::new(None)),
         }
     }
 }

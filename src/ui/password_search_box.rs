@@ -1,11 +1,12 @@
-use std::cell::{RefCell, RefMut};
-use std::env;
-use std::rc::Rc;
-
 use crate::spectre;
+use glib::subclass::Signal;
 use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
+use once_cell::sync::Lazy;
+use std::cell::{RefCell, RefMut};
+use std::env;
+use std::rc::Rc;
 mod imp {
     use super::*;
     // use gtk::subclass::prelude::*;
@@ -16,9 +17,9 @@ mod imp {
         pub site_entry: RefCell<Option<gtk::Entry>>,
         pub create_copy_button: RefCell<Option<gtk::Button>>,
         pub user: Rc<RefCell<Option<spectre::User>>>,
+        pub user_key: Rc<RefCell<Option<spectre::UserKey>>>,
         //TODO rethink when the pwd is shown...
         pub password_show_button: RefCell<Option<gtk::ToggleButton>>,
-        pub user_key: Rc<RefCell<Option<spectre::UserKey>>>,
         pub hbox_bottom: RefCell<Option<gtk::Box>>,
         pub hbox_top: RefCell<Option<gtk::Box>>,
     }
@@ -33,8 +34,6 @@ mod imp {
             klass.set_css_name("box");
         }
     }
-    // fn setup_
-    // impl
     impl ObjectImpl for PasswordSearchBox {
         fn constructed(&self, obj: &Self::Type) {
             use gtk::*;
@@ -48,16 +47,6 @@ mod imp {
             obj.set_margin_bottom(50);
             obj.set_margin_top(50);
 
-            // let password_label = gtk::EntryBuilder::new()
-            //     .hexpand(false)
-            //     .css_name("label")
-            //     .text("Haga0.RenoBetu")
-            //     .css_classes(vec![String::from("monospace"),String::from("pwd-preview")])
-            //     .visibility(false)
-            //     .has_frame(false)
-            //     .can_focus(false)
-            //     .halign(Align::Center)
-            //     .build();
             let password_label = gtk::LabelBuilder::new()
                 .hexpand_set(true)
                 .halign(Align::Fill)
@@ -112,13 +101,6 @@ mod imp {
                 .sensitive(false)
                 .css_classes(vec![String::from("suggested-action")])
                 .build();
-            // let create_copy_button = gtk::Button::with_label("Copy");
-            // create_copy_button.set_valign(gtk::Align::End);
-            // create_copy_button.set_size_request(120, -1);
-            // create_copy_button.add_css_class("suggested-action");
-            create_copy_button.connect_clicked(glib::clone!(@weak obj, @weak create_copy_button => move |_| {
-                create_copy_button.clipboard().set_text(&obj.get_password())
-            }));
             hbox_top.append(&create_copy_button);
 
             *self.hbox_top.borrow_mut() = Some(hbox_top);
@@ -138,6 +120,16 @@ mod imp {
                 child.unparent();
             }
         }
+
+        fn signals() -> &'static [Signal] {
+            static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| {
+                vec![
+                    Signal::builder("search-changed", &[String::static_type().into()], <()>::static_type().into()).build(),
+                    Signal::builder("copy-create-activated", &[String::static_type().into()], <()>::static_type().into()).build(),
+                ]
+            });
+            SIGNALS.as_ref()
+        }
     }
 
     impl WidgetImpl for PasswordSearchBox {}
@@ -148,7 +140,11 @@ glib::wrapper! {
     pub struct PasswordSearchBox(ObjectSubclass<imp::PasswordSearchBox>)
     @extends gtk::Box, gtk::Widget, @implements gtk::ConstraintTarget, gtk::Orientable;
 }
-
+pub enum CopyButtonMode {
+    Create,
+    Disabled,
+    Copy,
+}
 impl PasswordSearchBox {
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create PasswordSearchBox")
@@ -161,15 +157,52 @@ impl PasswordSearchBox {
         // *self_.user.borrow_mut() = *usr.borrow();
         self.connect_events();
     }
-
+    fn set_copy_button_mode(&self, mode: &CopyButtonMode) {
+        let self_ = imp::PasswordSearchBox::from_instance(&self);
+        let create_copy_button = self_.create_copy_button.borrow().as_ref().unwrap().clone();
+        match mode {
+            CopyButtonMode::Copy => {
+                create_copy_button.set_label("Copy");
+                create_copy_button.set_sensitive(true);
+                create_copy_button.set_css_classes(&["suggested-action"]);
+            }
+            CopyButtonMode::Create => {
+                create_copy_button.set_label("Create");
+                create_copy_button.set_sensitive(true);
+                create_copy_button.set_css_classes(&["create-action"]);
+            }
+            CopyButtonMode::Disabled => {
+                create_copy_button.set_label("Copy");
+                create_copy_button.set_sensitive(false);
+                create_copy_button.set_css_classes(&[]);
+            }
+        }
+    }
+    fn calculate_copy_button_mode(&self, ) -> CopyButtonMode {
+        let self_ = imp::PasswordSearchBox::from_instance(&self);
+        let user = self_.user.clone();
+        let entry = self_.site_entry.clone();
+        if user.borrow().as_ref().unwrap().has_site(&entry.borrow().as_ref().unwrap().text().to_string()) {
+            CopyButtonMode::Copy
+        } else if entry.borrow().as_ref().unwrap().text().len() > 0 {
+            CopyButtonMode::Create
+        } else {
+            CopyButtonMode::Disabled
+        }
+    }
     fn connect_events(&self) {
         let self_ = imp::PasswordSearchBox::from_instance(&self);
         let self_clone = self.clone();
+        let user = self_.user.clone();
         let create_copy_button = self_.create_copy_button.borrow().as_ref().unwrap().clone();
-        // let password_label = self_.password_label.borrow().as_ref().unwrap().clone();
         self_.site_entry.borrow().as_ref().unwrap().connect_changed(move |entry| {
             self_clone.update_password_label();
-            create_copy_button.set_sensitive(entry.text().len() > 0);
+            let button_mode = self_clone.calculate_copy_button_mode();
+            self_clone.set_copy_button_mode(&button_mode);
+            match button_mode {
+                CopyButtonMode::Disabled => (),
+                default => {self_clone.emit_by_name("search-changed", &[&entry.text().to_string()]).unwrap();},
+            }
         });
 
         let self_clone = self.clone();
@@ -177,20 +210,34 @@ impl PasswordSearchBox {
         password_show_button.connect_toggled(move |button| {
             self_clone.update_password_label();
         });
+        let self_clone = self.clone();
+        let create_copy_button = self_.create_copy_button.borrow().as_ref().unwrap().clone();
+        let entry = self_.site_entry.borrow().as_ref().unwrap().clone();
+        create_copy_button.connect_clicked(glib::clone!(@weak self as self_clone => move |_| {
+            // button.clipboard().set_text(&self_clone.get_password_for_label())
+            self_clone.emit_by_name("copy-create-activated",  &[&entry.text().to_string()]).unwrap();
+        }));
+
+        let site_entry = self_.site_entry.borrow().as_ref().unwrap().clone();
+        site_entry.connect_activate(glib::clone!(@weak self as self_clone => move |entry|{
+            self_clone.emit_by_name("copy-create-activated",  &[&entry.text().to_string()]).unwrap();
+        }));
+        // button.connect_clicked(clone!(@weak self as tag => move |_btn| {
+            
+        // }));
+    }
+    pub fn set_site_name(&self, name: &str) {
+        let self_ = imp::PasswordSearchBox::from_instance(&self);
+        self_.site_entry.borrow().as_ref().unwrap().set_text(name);
+        self.update_password_label();
     }
     fn update_password_label(&self) {
         let self_ = imp::PasswordSearchBox::from_instance(&self);
         let self_clone = self.clone();
         let password_label = self_.password_label.borrow().as_ref().unwrap().clone();
-        password_label.set_text(self_clone.get_password().as_str());
+        password_label.set_text(self_clone.get_password_for_label().as_str());
     }
-    pub fn set_site_name(&self, name: &str) {
-        let self_ = imp::PasswordSearchBox::from_instance(&self);
-        self_.site_entry.borrow().as_ref().unwrap().set_text(name);
-        self_.password_label.borrow().as_ref().unwrap().set_text(&self.get_password());
-    }
-
-    pub fn get_password(&self) -> String {
+    pub fn get_password_for_label(&self) -> String {
         let self_ = imp::PasswordSearchBox::from_instance(&self);
 
         // TODO remove hardcoded password_type

@@ -35,3 +35,7 @@ button.tiny {
 .pwd-preview{
 	font-size: 40px;
 }
+button.create-action{
+	background-color:#2EC27E;
+	color: white;
+}

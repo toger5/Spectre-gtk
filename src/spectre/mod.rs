@@ -358,6 +358,19 @@ impl User {
             (*s).set_used_now();
         }
     }
+    
+    pub fn has_site(&self, site_name: &String) -> bool {
+        for s in self.get_sites() {
+            unsafe {
+                println!("{:?}",s.as_ref().unwrap().get_name());
+                if (*s).get_name() == site_name.clone() {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+    
 }
 impl Default for User {
     fn default() -> User {
