@@ -4,6 +4,7 @@ use std::rc::Rc;
 
 use crate::spectre;
 use gtk::glib;
+use gtk::gio;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
 mod imp {
@@ -120,7 +121,11 @@ mod imp {
             copy_button.set_size_request(120, -1);
             copy_button.add_css_class("suggested-action");
             copy_button.connect_clicked(glib::clone!(@weak obj, @weak copy_button => move |_| {
-                copy_button.clipboard().set_text(&obj.get_password())
+                copy_button.clipboard().set_text(&obj.get_password());
+                let app = copy_button.root().unwrap().downcast::<gtk::Window>().ok().unwrap().application().unwrap();
+                let noti = gio::Notification::new("Password copied!");
+                noti.set_body(Some("It can be pasted anywhere using ctrl+c."));
+                app.send_notification(Some("copy-notification"), &noti);
             }));
             hbox_bottom.append(&copy_button);
 
