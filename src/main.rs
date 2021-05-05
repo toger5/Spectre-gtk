@@ -173,7 +173,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                         default => println!("Message Dialog dismissed"),
                     };
                 }));
-            dialog.show();
+                dialog.show();
             }
         }));
     }

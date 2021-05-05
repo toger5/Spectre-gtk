@@ -69,10 +69,10 @@ impl PasswordWindow {
             });
         }));
         // factory.connect_unbind(|fact, item| {
-            // let (prop, search_box, _, _) = PasswordWindow::parse_list_item(item);
-            // if prop == "___search" {
-            //     search_box.set_site_name(&prop);
-            // }
+        // let (prop, search_box, _, _) = PasswordWindow::parse_list_item(item);
+        // if prop == "___search" {
+        //     search_box.set_site_name(&prop);
+        // }
         // });
     }
 
@@ -98,7 +98,7 @@ impl PasswordWindow {
             }
         }
     }
-    pub fn clear_site_list(&self){
+    pub fn clear_site_list(&self) {
         let self_ = &imp::PasswordWindow::from_instance(self);
         while self_.string_store.string(0).is_some() {
             self_.string_store.remove(0);
@@ -119,129 +119,74 @@ impl PasswordWindow {
             self_.list_view.clipboard().set_text(&pwd);
             self.hide();
         } else {
-            //Todo popup
-            println!("The site does not exist!!! -> gets created");
-            self_
-                .user
-                .borrow_mut()
-                .as_mut()
-                .unwrap()
-                .add_site(site_name.clone().as_str(), spectre::ResultType::TemplateLong, 1, spectre::AlgorithmVersionDefault);
+            let user_clone = self_.user.clone();
+            let self_clone = self.clone();
+            let name_clone = site_name.clone();
+            let window = self_.list_view.root().unwrap().downcast::<gtk::Window>().ok().unwrap();
+            PasswordWindow::show_accept_new_site_dialog(&window, &site_name, move || {
+                user_clone.borrow_mut().as_mut().unwrap().add_site(
+                    name_clone.clone().as_str(),
+                    spectre::ResultType::TemplateLong,
+                    1,
+                    spectre::AlgorithmVersionDefault,
+                );
 
-            match spectre::marshal_write_to_file(spectre::MarshalFormat::flat, *usr.borrow().as_ref().unwrap()) {
-                Ok(a) => println!("succsesfully wrote to file"),
-                Err(r) => println!("err {}", r),
-            }
-            // reload site list:
-            self.fill_site_list();
+                match spectre::marshal_write_to_file(spectre::MarshalFormat::flat, *usr.borrow().as_ref().unwrap()) {
+                    Ok(a) => println!("succsesfully wrote to file"),
+                    Err(r) => println!("err {}", r),
+                }
+                // reload site list:
+                self_clone.fill_site_list();
+            });
         }
+    }
+    // fn show_accept_new_site_dialog(){}
+    fn show_accept_new_site_dialog<F: Fn() + 'static>(win: &gtk::Window, site_name: &String, accepted: F) {
+        // let self_ = &imp::PasswordWindow::from_instance(self);
+        let dialog = gtk::MessageDialog::new(
+            Some(win),
+            gtk::DialogFlags::MODAL,
+            gtk::MessageType::Question,
+            gtk::ButtonsType::YesNo,
+            "Do you want to add:",
+        );
+        dialog.set_default_response(gtk::ResponseType::Yes);
+        dialog.set_secondary_text(Some(&format!(" {} (Press Enter to add)", site_name)));
+        dialog.connect_response(move |dialog, response| {
+            println!("{}", response);
+            match response {
+                gtk::ResponseType::Yes => {
+                    dialog.close();
+                    accepted();
+                }
+                gtk::ResponseType::No => dialog.close(),
+                default => println!("Message Dialog dismissed"),
+            };
+        });
+        dialog.show();
     }
 }
 
-// PASSWORD UI
+// FILTER
 /*
-let pwd_entry_big: Entry = Entry::new();
-pwd_window
-    .child()
-    .unwrap()
-    .downcast::<gtk::Box>()
-    .ok()
-    .unwrap()
-    .append(&pwd_entry_big);
-pwd_entry_big.hide();
-// PASSWORD UI connections
-{
-    let pwd_entry_big_clone = pwd_entry_big.clone();
-    pwd_window.connect_show(move |window| {
-        pwd_entry_big_clone.set_text("");
-    });
+ // let filter = gtk::StringFilter::new(None);
+ // filter.set_search(Some(&search_name));
+ // filter_model.set_filter(filter);
+ // let filter_model = gtk::FilterListModel::new(Some(&site_list_store), Some(&filter));
+ // filter.set_visible_func(move |model: &gtk::TreeModel, iter: &gtk::TreeIter| {
+ //     let search_name = pwd_entry_big_clone.text().to_string();
+ //     if pwd_entry_big_clone.text_length() < 1 || search_name.is_empty() {
+ //         return true;
+ //     }
 
-    let pwd_entry_big_clone = pwd_entry_big.clone();
-    let search_name = pwd_entry_big_clone.text().to_string();
-    // let filter = gtk::StringFilter::new(None);
-    // filter.set_search(Some(&search_name));
-    // filter_model.set_filter(filter);
-    // let filter_model = gtk::FilterListModel::new(Some(&site_list_store), Some(&filter));
-    // filter.set_visible_func(move |model: &gtk::TreeModel, iter: &gtk::TreeIter| {
-    //     let search_name = pwd_entry_big_clone.text().to_string();
-    //     if pwd_entry_big_clone.text_length() < 1 || search_name.is_empty() {
-    //         return true;
-    //     }
+ //     let site_name = (*model)
+ //         .get(iter, 0)
+ //         .get::<String>()
+ //         .unwrap()
+ //         .expect("Tree value has wrong type (expected String)")
+ //         .to_lowercase();
+ //     site_name.contains(&search_name)
+ // });
 
-    //     let site_name = (*model)
-    //         .get(iter, 0)
-    //         .get::<String>()
-    //         .unwrap()
-    //         .expect("Tree value has wrong type (expected String)")
-    //         .to_lowercase();
-    //     site_name.contains(&search_name)
-    // });
-
-    //TODO-OldList
-    /*
-    site_list.set_model(Some(&filter));
-    pwd_entry_big.connect_changed(move |entry| {
-        filter.refilter();
-    });
-    */
-
-    pwd_entry_big.connect_activate(glib::clone!( @weak user, @weak user_key, @weak pwd_window, @weak pwd_list_store => move |entry| {
-        // log_win.hide();
-        let user_key = user_key.borrow().expect("NO MASTER KEY GOT DAMMIT");
-        let site_name = entry.text();
-        let pwd = spectre::site_result(
-            site_name.as_str(),
-            user_key,
-            password_type,
-            spectre::AlgorithmVersionDefault,
-        );
-        entry.clipboard().set_text(&pwd);
-
-
-
-
-
-
-
-        println!(
-            "pwd for site {} ({:}) saved to clipboard",
-            site_name.as_str(),
-            spectre::c_char_to_string(user.borrow().unwrap().userName)
-        );
-        pwd_window.hide();
-        let mut exists = false;
-        for s in user.borrow().unwrap().get_sites() {
-            unsafe {
-                if (*s).get_name() == site_name.as_str().to_owned() {
-                    exists = true;
-                }
-            }
-        }
-
-        if !exists {
-            println!("The site does not exist!!! -> gets created");
-            //TODO: show popup
-            user.borrow_mut().as_mut().unwrap().add_site(
-                site_name.as_str(),
-                spectre::ResultType::TemplateLong,
-                1,
-                spectre::AlgorithmVersionDefault,
-            );
-
-            match spectre::marshal_write_to_file(
-                spectre::MarshalFormat::flat,
-                user.borrow().unwrap(),
-            ) {
-                Ok(a) => println!("succsesfully wrote to file"),
-                Err(r) => println!("err {}", r),
-            }
-
-            // reload site list:
-            fill_site_list(
-                &pwd_list_store,
-                &user.borrow().expect("no User while filling site list"),
-            )
-        }
-    }));
-}
+ site_list.set_model(Some(&filter));
 */
