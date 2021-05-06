@@ -13,6 +13,16 @@ glib::wrapper! {
     pub struct PasswordWindow(ObjectSubclass<imp::PasswordWindow>)
     @extends gtk::Widget, gtk::Window, gtk::ApplicationWindow;
 }
+pub mod helper{
+    use gtk::prelude::*;
+    pub fn copy_to_clipboard_with_notification<T>(widget: &T, text: &str) where T: gtk::WidgetExt {
+        widget.clipboard().set_text(text);
+        let app = widget.root().unwrap().downcast::<gtk::Window>().ok().unwrap().application().unwrap();
+        let noti = gtk::gio::Notification::new("Password copied!");
+        noti.set_body(Some("It can be pasted anywhere using ctrl+v."));
+        app.send_notification(Some("copy-notification"), &noti);
+    }
+}
 impl PasswordWindow {
     pub fn new(user: Rc<RefCell<Option<spectre::User>>>, user_key: Rc<RefCell<Option<spectre::UserKey>>>) -> Self {
         let self_: PasswordWindow = glib::Object::new(&[]).expect("Failed to create PasswordWindow");
@@ -116,7 +126,7 @@ impl PasswordWindow {
 
         if usr.borrow().as_ref().unwrap().has_site(site_name) {
             let pwd = spectre::site_result(&site_name, *key.borrow().as_ref().unwrap(), password_type, spectre::AlgorithmVersionDefault);
-            self_.list_view.clipboard().set_text(&pwd);
+            helper::copy_to_clipboard_with_notification(&self_.list_view, &pwd);
             self.hide();
         } else {
             let user_clone = self_.user.clone();
