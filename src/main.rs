@@ -74,10 +74,8 @@ fn main() {
 }
 
 fn load_custom_styling() {
-    let mut path = paths::Paths::new().prefix;
-    path.push("data/style.css");
     let provider = gtk::CssProvider::new();
-    provider.load_from_file(&gdk::gio::File::new_for_path(&path));
+    provider.load_from_data(include_str!("../data/style.css").as_bytes());
     gtk::StyleContext::add_provider_for_display(&gdk::Display::default().unwrap(), &provider, 500);
 }
 

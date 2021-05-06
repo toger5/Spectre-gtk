@@ -28,6 +28,20 @@
   <url type="homepage">https://github.com/toger5/Spectre-gtk</url>
   <content_rating type="oars-1.0" />
   <releases>
+    <release version="0.0.4" date="2021-05-05">
+      <description>
+        <p>It has almost reached feature parity with the gtk3 branch but is much nicer to look at.
+          The password file is in the ~/.spectre.d/name.mpsites (The folder still has to be created manually... pre-release...)
+        </p>
+      </description>
+    </release>
+    <release version="0.0.3" date="2021-05-1">
+      <description>
+          <p>Port to gtk4</p>
+          <p>New list using gtk4 ListView and reusable cells</p>
+          <p>New cell design with copy button and password preview</p>
+      </description>
+    </release>
     <release version="0.0.2" date="2021-03-31">
       <description>
         <p>First release of the Spectre Rust Flatpak App. Nothing works but all the important pices are figured out (distribution, binding to the Spectre api repo)</p>
