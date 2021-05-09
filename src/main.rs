@@ -21,7 +21,7 @@ use std::fs::File;
 // use glib;
 use gtk::{
     glib, Application, ApplicationWindow, Builder, Button, ButtonsType, DialogFlags, Entry, Label,
-    ListItem, MessageDialog, MessageType, TreeModelFilterExt, Window,
+    ListItem, MessageDialog, MessageType, Window,
 };
 use pango;
 use std::time::SystemTime;
@@ -70,7 +70,7 @@ fn main() {
     //     Default::default(),
     // );
 
-    application.run();
+    // application.run();
 }
 
 fn load_custom_styling() {

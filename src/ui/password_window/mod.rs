@@ -13,9 +13,12 @@ glib::wrapper! {
     pub struct PasswordWindow(ObjectSubclass<imp::PasswordWindow>)
     @extends gtk::Widget, gtk::Window, gtk::ApplicationWindow;
 }
-pub mod helper{
+pub mod helper {
     use gtk::prelude::*;
-    pub fn copy_to_clipboard_with_notification<T>(widget: &T, text: &str) where T: gtk::WidgetExt {
+    pub fn copy_to_clipboard_with_notification<T>(widget: &T, text: &str)
+    where
+        T: IsA<gtk::Widget>,
+    {
         widget.clipboard().set_text(text);
         let app = widget.root().unwrap().downcast::<gtk::Window>().ok().unwrap().application().unwrap();
         let noti = gtk::gio::Notification::new("Password copied!");
@@ -36,7 +39,7 @@ impl PasswordWindow {
     pub fn setup(&self) {
         let self_ = &imp::PasswordWindow::from_instance(self);
 
-        let model = gtk::NoSelection::new(Some(&self_.string_store));
+        let model = gtk::NoSelection::new(Some(&self_.filter_store));
 
         let factory = gtk::SignalListItemFactory::new();
         self_.list_view.set_factory(Some(&factory));
@@ -65,18 +68,21 @@ impl PasswordWindow {
             stack.set_visible_child_name(visible_child);
             let self_c = self_clone.clone();
             search_box.connect_local("copy-create-activated", false, move |args|{
-                let site_name = args[1].get::<String>().unwrap().unwrap_or(String::from("couldnt parse string"));
+                let site_name = args[1].get::<String>().unwrap();
                 println!("copy-create-activated: {}",site_name);
                 self_c.activate_copy_or_create(&site_name);
                 None
             });
             let self_c = self_clone.clone();
             search_box.connect_local("search-changed", false, move |args|{
-                let site_name = args[1].get::<String>().unwrap().unwrap();
+                let site_name = args[1].get::<String>().unwrap();
                 self_c.filter_site_list(&site_name);
-                println!("search-changed: {}",site_name);
+                println!("search-changed: {}",&site_name);
                 None
             });
+            // let itemx = gtk::PropertyExpression::new(gtk::ListItem::static_type(), gtk::NONE_EXPRESSION, "item");
+            // let stringx = gtk::PropertyExpression::new(gtk::StringObject::static_type(), Some(&itemx), "string");
+            // println!("evaluation of stirngx: {}", stringx.evaluate(Some(item)).unwrap().get::<String>().unwrap());
         }));
         // factory.connect_unbind(|fact, item| {
         // let (prop, search_box, _, _) = PasswordWindow::parse_list_item(item);
@@ -89,7 +95,7 @@ impl PasswordWindow {
     pub fn parse_list_item(item: &gtk::ListItem) -> (String, PasswordSearchBox, PasswordListBox, gtk::Stack) {
         let stack = item.child().unwrap().downcast::<gtk::Stack>().ok().unwrap();
         (
-            item.item().unwrap().property("string").ok().unwrap().get::<String>().ok().unwrap().unwrap(),
+            item.item().unwrap().property("string").ok().unwrap().get::<String>().ok().unwrap(),
             stack.child_by_name("search").unwrap().downcast::<PasswordSearchBox>().ok().unwrap(),
             stack.child_by_name("pwd").unwrap().downcast::<PasswordListBox>().ok().unwrap(),
             stack,
@@ -100,21 +106,36 @@ impl PasswordWindow {
         let self_ = &imp::PasswordWindow::from_instance(self);
         let site_list = self_.user.borrow().unwrap().get_sites();
         self.clear_site_list();
-        self_.string_store.append("___search");
+        // let store = self_.string_store.model().unwrap().downcast::<gtk::StringList>().ok().unwrap();
+        let store = self.get_string_list();
+        store.append("___search");
         for site in site_list.iter().rev() {
             unsafe {
                 let site_name: String = (**site).get_name();
-                self_.string_store.append(&site_name);
+                store.append(&site_name);
             }
         }
     }
-    pub fn clear_site_list(&self) {
+    fn get_string_list(&self) -> gtk::StringList {
         let self_ = &imp::PasswordWindow::from_instance(self);
-        while self_.string_store.string(0).is_some() {
-            self_.string_store.remove(0);
+        let store = &self_.filter_store;
+        store.model().unwrap().downcast::<gtk::StringList>().unwrap()
+    }
+    pub fn clear_site_list(&self) {
+        let store = self.get_string_list();
+        while store.string(0).is_some() {
+            store.remove(0);
         }
     }
-    pub fn filter_site_list(&self, filter: &str) {
+    pub fn filter_site_list(&self, filter_str: &str) {
+        let self_ = &imp::PasswordWindow::from_instance(self);
+        let filter = self_.filter_store.filter().unwrap().downcast::<gtk::CustomFilter>().ok().unwrap();
+        let f_str = String::from(filter_str.clone());
+        filter.set_filter_func(move |obj| {
+            let str_obj = obj.downcast_ref::<gtk::StringObject>().unwrap();
+            let s = str_obj.string().to_string();
+            s.contains(&f_str) || s.contains("___search")
+        });
         println!("filtering with: {}", filter);
     }
     pub fn activate_copy_or_create(&self, site_name: &String) {

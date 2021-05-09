@@ -4,7 +4,8 @@ use super::*;
 pub struct PasswordWindow {
     pub user: Rc<RefCell<Option<spectre::User>>>,
     pub user_key: Rc<RefCell<Option<spectre::UserKey>>>,
-    pub string_store: gtk::StringList,
+    // pub string_store: gtk::FilterListModel,
+    pub filter_store: gtk::FilterListModel,
     pub list_view: gtk::ListView,
     pub entry_site_name: Option<String>,
     // pub signal_search_changed: Rc<RefCell<Option<glib::signal::SignalHandlerId>>>,
@@ -19,11 +20,22 @@ impl ObjectSubclass for PasswordWindow {
 
     fn new() -> Self {
         Self {
-            string_store: gtk::StringList::new(&[]),
-            list_view: gtk::ListView::new(
-                Option::<&gtk::NoSelection>::None,
-                Option::<&gtk::SignalListItemFactory>::None,
-            ),
+            // string_store: gtk::StringList::new(&[]),
+            filter_store: {
+                let stringx = gtk::PropertyExpression::new(gtk::StringObject::static_type(), gtk::NONE_EXPRESSION, "string");
+                let filter = gtk::StringFilter::new(Some(&stringx));
+                // filter.set_search(Some(""));
+                filter.set_match_mode(gtk::StringFilterMatchMode::Substring);
+                // let filter = gtk::StringFilterBuilder::new()
+                //     .match_mode(gtk::StringFilterMatchMode::Substring)
+                //     .expression(&stringx)
+                //     .search("te")
+                //     .build();
+                let custom_filter = gtk::CustomFilter::new(|_| true);
+                gtk::FilterListModel::new(Some(&gtk::StringList::new(&[])), Some(&custom_filter))
+            
+            },
+            list_view: gtk::ListView::new(Option::<&gtk::NoSelection>::None, Option::<&gtk::SignalListItemFactory>::None),
             entry_site_name: Option::<String>::None,
             user: Rc::new(RefCell::new(None)),
             user_key: Rc::new(RefCell::new(None)),

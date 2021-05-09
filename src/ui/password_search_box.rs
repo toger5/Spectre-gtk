@@ -197,12 +197,8 @@ impl PasswordSearchBox {
         let create_copy_button = self_.create_copy_button.borrow().as_ref().unwrap().clone();
         self_.site_entry.borrow().as_ref().unwrap().connect_changed(move |entry| {
             self_clone.update_password_label();
-            let button_mode = self_clone.calculate_copy_button_mode();
-            self_clone.set_copy_button_mode(&button_mode);
-            match button_mode {
-                CopyButtonMode::Disabled => (),
-                default => {self_clone.emit_by_name("search-changed", &[&entry.text().to_string()]).unwrap();},
-            }
+            self_clone.set_copy_button_mode(&self_clone.calculate_copy_button_mode());
+            self_clone.emit_by_name("search-changed", &[&entry.text().to_string()]).unwrap();
         });
 
         let self_clone = self.clone();
