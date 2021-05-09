@@ -37,5 +37,6 @@ button.tiny {
 }
 button.create-action{
 	background-color:#2EC27E;
+	background-image: none;
 	color: white;
 }
