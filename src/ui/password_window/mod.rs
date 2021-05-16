@@ -2,6 +2,7 @@ use std::cell::{RefCell, RefMut};
 use std::rc::Rc;
 
 use super::password_search_box::CopyButtonMode;
+use crate::model::g_site::GSite;
 use crate::spectre;
 use crate::ui::{password_list_box::PasswordListBox, password_search_box::PasswordSearchBox};
 use gtk::glib;
@@ -92,10 +93,16 @@ impl PasswordWindow {
         // });
     }
 
-    pub fn parse_list_item(item: &gtk::ListItem) -> (String, PasswordSearchBox, PasswordListBox, gtk::Stack) {
+    pub fn parse_list_item(item: &gtk::ListItem) -> (Option<GSite>, PasswordSearchBox, PasswordListBox, gtk::Stack) {
         let stack = item.child().unwrap().downcast::<gtk::Stack>().ok().unwrap();
         (
-            item.item().unwrap().property("string").ok().unwrap().get::<String>().ok().unwrap(),
+            {
+                match item.item().unwrap().downcast::<GSite>(){
+                    Ok(g_site) => Some(g_site),
+                    Err(_) => None
+                }
+            },
+            // item.item().unwrap().property("string").ok().unwrap().get::<String>().ok().unwrap(),
             stack.child_by_name("search").unwrap().downcast::<PasswordSearchBox>().ok().unwrap(),
             stack.child_by_name("pwd").unwrap().downcast::<PasswordListBox>().ok().unwrap(),
             stack,
@@ -107,12 +114,13 @@ impl PasswordWindow {
         let site_list = self_.user.borrow().unwrap().get_sites();
         self.clear_site_list();
         // let store = self_.string_store.model().unwrap().downcast::<gtk::StringList>().ok().unwrap();
-        let store = self.get_string_list();
-        store.append("___search");
+        let store = self.get_store();
+        // store.append("___search");
         for site in site_list.iter().rev() {
             unsafe {
                 let site_name: String = (**site).get_name();
-                store.append(&site_name);
+                // store.append(&site_name);
+                store.append(&GSite::new_with_site(&**site));
             }
         }
     }
@@ -121,11 +129,16 @@ impl PasswordWindow {
         let store = &self_.filter_store;
         store.model().unwrap().downcast::<gtk::StringList>().unwrap()
     }
+    fn get_store(&self) -> gtk::gio::ListStore {
+        let self_ = &imp::PasswordWindow::from_instance(self);
+        let store = &self_.filter_store;
+        store.model().unwrap().downcast::<gtk::gio::ListStore>().unwrap()
+    }
     pub fn clear_site_list(&self) {
-        let store = self.get_string_list();
-        while store.string(0).is_some() {
-            store.remove(0);
-        }
+        self.get_store().remove_all();
+        // while store.string(0).is_some() {
+        //     store.remove(0);
+        // }
     }
     pub fn filter_site_list(&self, filter_str: &str) {
         let self_ = &imp::PasswordWindow::from_instance(self);

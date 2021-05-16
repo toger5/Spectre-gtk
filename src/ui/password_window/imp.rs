@@ -31,8 +31,14 @@ impl ObjectSubclass for PasswordWindow {
                 //     .expression(&stringx)
                 //     .search("te")
                 //     .build();
+                use gtk::gio;
+                use crate::model::g_site::GSite;
                 let custom_filter = gtk::CustomFilter::new(|_| true);
-                gtk::FilterListModel::new(Some(&gtk::StringList::new(&[])), Some(&custom_filter))
+                
+                let site_store = gio::ListStore::new(GSite::static_type());
+                // site_store.append(GSite(spectre::Site));
+                // gtk::FilterListModel::new(Some(&gtk::StringList::new(&[])), Some(&custom_filter))
+                gtk::FilterListModel::new(Some(&site_store), Some(&custom_filter))
             
             },
             list_view: gtk::ListView::new(Option::<&gtk::NoSelection>::None, Option::<&gtk::SignalListItemFactory>::None),
@@ -70,6 +76,10 @@ impl WidgetImpl for PasswordWindow {
 }
 impl WindowImpl for PasswordWindow {
     fn close_request(&self, window: &Self::Type) -> glib::signal::Inhibit {
-        self.parent_close_request(window)
+        println!("close-but-no-logout");
+        // let app = self.get_child().unwrap().root().unwrap().downcast::<gtk::Window>().ok().unwrap().application().unwrap();
+        // self.parent_close_request(window);
+        // app.quit();
+        glib::signal::Inhibit(false)
     }
 }

@@ -27,6 +27,7 @@ use pango;
 use std::time::SystemTime;
 
 mod ui;
+mod model;
 
 use ui::password_list_box::PasswordListBox;
 use ui::password_search_box::PasswordSearchBox;

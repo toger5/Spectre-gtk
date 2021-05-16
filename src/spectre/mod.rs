@@ -270,6 +270,12 @@ impl Site {
         num::FromPrimitive::from_u32(self.loginType as u32).unwrap()
     }
 }
+impl PartialEq for Site {
+    fn eq(&self, other: &Self) -> bool {
+        self.get_name() == other.get_name()
+    }
+}
+impl Eq for Site {}
 
 fn c_char_to_char(c: *const ::std::os::raw::c_char) -> char {
     unsafe {
