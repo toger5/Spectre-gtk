@@ -8,7 +8,8 @@ mod imp{
     use std::cell::RefCell;
     #[derive(Debug, Default)]
     pub struct GSite {
-       pub site: RefCell<Option<spectre::Site>>
+       pub site: RefCell<Option<spectre::Site>>,
+       pub is_search: RefCell<bool>
     }
     #[glib::object_subclass]
     impl ObjectSubclass for GSite {
@@ -16,7 +17,7 @@ mod imp{
         type Type = super::GSite;
         type ParentType = glib::Object;
         fn new() -> Self {
-            Self{site: RefCell::new(None)}
+            Self{site: RefCell::new(None), is_search: RefCell::new(false)}
         }
     }
     impl ObjectImpl for GSite {
@@ -83,21 +84,32 @@ glib::wrapper! {
 }
 
 impl GSite {
-    pub fn site(&self)-> spectre::Site {
+    pub fn site(&self)-> Option<spectre::Site> {
         let self_ = imp::GSite::from_instance(&self);
-        self_.site.borrow().unwrap()
+        *self_.site.borrow()
     }
     pub fn new() -> Self {
         glib::Object::new(&[]).expect("Failed to create GSite")
-    }
-    pub fn set_site(&self, new_site : &spectre::Site){
-        let self_ = imp::GSite::from_instance(&self);
-        self_.site.replace(Some(*new_site));
     }
     pub fn new_with_site(site: &spectre::Site) -> Self {
         let s = GSite::new();
         s.set_site(site);
         s
+    }
+    pub fn new_search() -> Self {
+        let s = GSite::new();
+        let self_ = imp::GSite::from_instance(&s);
+        *self_.is_search.borrow_mut() = true;
+        s
+    }
+    pub fn is_search(&self) -> bool {
+        let is_search = *imp::GSite::from_instance(&self).is_search.borrow();
+        is_search
+        // *self_.
+    }
+    pub fn set_site(&self, new_site : &spectre::Site){
+        let self_ = imp::GSite::from_instance(&self);
+        self_.site.replace(Some(*new_site));
     }
 }
 
