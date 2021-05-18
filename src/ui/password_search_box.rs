@@ -1,4 +1,5 @@
 use crate::spectre;
+use crate::model::g_site::*;
 use glib::subclass::Signal;
 use gtk::glib;
 use gtk::prelude::*;
@@ -13,6 +14,7 @@ mod imp {
 
     #[derive(Debug, Default)]
     pub struct PasswordSearchBox {
+        pub site: RefCell<Option<GSite>>,
         pub password_label: RefCell<Option<gtk::Label>>,
         pub site_entry: RefCell<Option<gtk::Entry>>,
         pub create_copy_button: RefCell<Option<gtk::Button>>,
@@ -124,8 +126,8 @@ mod imp {
         fn signals() -> &'static [Signal] {
             static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| {
                 vec![
-                    Signal::builder("search-changed", &[String::static_type().into()], <()>::static_type().into()).build(),
-                    Signal::builder("copy-create-activated", &[String::static_type().into()], <()>::static_type().into()).build(),
+                    Signal::builder("search-changed", &[GSite::static_type().into()], <()>::static_type().into()).build(),
+                    Signal::builder("copy-create-activated", &[GSite::static_type().into()], <()>::static_type().into()).build(),
                 ]
             });
             SIGNALS.as_ref()
@@ -196,9 +198,11 @@ impl PasswordSearchBox {
         let user = self_.user.clone();
         let create_copy_button = self_.create_copy_button.borrow().as_ref().unwrap().clone();
         self_.site_entry.borrow().as_ref().unwrap().connect_changed(move |entry| {
+            let self_ = imp::PasswordSearchBox::from_instance(&self_clone);
             self_clone.update_password_label();
             self_clone.set_copy_button_mode(&self_clone.calculate_copy_button_mode());
-            self_clone.emit_by_name("search-changed", &[&entry.text().to_string()]).unwrap();
+            self_.site.borrow().as_ref().unwrap().set_descriptor_name(&entry.text().to_string());
+            self_clone.emit_by_name("search-changed", &[&self_.site.borrow().as_ref().unwrap()]).unwrap();
         });
 
         let self_clone = self.clone();
@@ -209,22 +213,27 @@ impl PasswordSearchBox {
         let self_clone = self.clone();
         let create_copy_button = self_.create_copy_button.borrow().as_ref().unwrap().clone();
         let entry = self_.site_entry.borrow().as_ref().unwrap().clone();
+        // let self_site = self_.site.borrow().as_ref().unwrap().clone();
         create_copy_button.connect_clicked(glib::clone!(@weak self as self_clone => move |_| {
             // button.clipboard().set_text(&self_clone.get_password_for_label())
-            self_clone.emit_by_name("copy-create-activated",  &[&entry.text().to_string()]).unwrap();
-        }));
+            let self_ = imp::PasswordSearchBox::from_instance(&self_clone);
 
+            self_clone.emit_by_name("copy-create-activated",  &[&self_.site.borrow().as_ref().unwrap()]).unwrap();
+        }));
+        // let self_site = self_.site.borrow().as_ref().unwrap().clone();
         let site_entry = self_.site_entry.borrow().as_ref().unwrap().clone();
         site_entry.connect_activate(glib::clone!(@weak self as self_clone => move |entry|{
-            self_clone.emit_by_name("copy-create-activated",  &[&entry.text().to_string()]).unwrap();
+            let self_ = imp::PasswordSearchBox::from_instance(&self_clone);
+            self_clone.emit_by_name("copy-create-activated",  &[&self_.site.borrow().as_ref().unwrap()]).unwrap();
         }));
         // button.connect_clicked(clone!(@weak self as tag => move |_btn| {
             
         // }));
     }
-    pub fn set_site_name(&self, name: &str) {
+    pub fn set_site(&self, site: &GSite) {
         let self_ = imp::PasswordSearchBox::from_instance(&self);
-        self_.site_entry.borrow().as_ref().unwrap().set_text(name);
+        *self_.site.borrow_mut() = Some(site.clone());
+        self_.site_entry.borrow().as_ref().unwrap().set_text(&site.descriptor_name());
         self.update_password_label();
     }
     fn update_password_label(&self) {

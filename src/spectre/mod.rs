@@ -24,7 +24,7 @@ impl Default for UserKey{
     }
 }
 #[repr(u32)]
-#[derive(FromPrimitive, Clone)]
+#[derive(FromPrimitive, Clone, Copy)]
 pub enum AlgorithmVersion {
     /** V0 did math with chars whose signedness was platform-dependent. */
     V0 = spectrebind::SpectreAlgorithmV0,
@@ -39,7 +39,7 @@ pub const AlgorithmVersionDefault: AlgorithmVersion = AlgorithmVersion::V3;
 pub const AlgorithmVersionLatest: AlgorithmVersion = AlgorithmVersion::V3;
 
 #[repr(u32)]
-#[derive(FromPrimitive)]
+#[derive(FromPrimitive, Clone, Copy)]
 pub enum ResultType {
     /** 16: pg^VMAUBk5x3p%HP%i4= */
     TemplateMaximum = spectrebind::SpectreResultTemplateMaximum,
@@ -350,7 +350,7 @@ impl User {
         result_type: ResultType,
         site_counter: u32,
         algorithm_version: AlgorithmVersion,
-    ) {
+    ) -> Site {
         let s: *mut Site;
         let site_name_ptr = CString::new(site_name).unwrap();
         unsafe {
@@ -362,9 +362,9 @@ impl User {
                 algorithm_version as u32,
             );
             (*s).set_used_now();
+            *s
         }
     }
-    
     pub fn has_site(&self, site_name: &String) -> bool {
         for s in self.get_sites() {
             unsafe {

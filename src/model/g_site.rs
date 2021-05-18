@@ -2,6 +2,30 @@ use crate::spectre;
 use gtk::glib;
 use gtk::subclass::prelude::*;
 use std::cell::{RefCell, Ref};
+
+#[derive(Clone)]
+pub struct SiteDescriptor{
+    pub siteName: RefCell<String>,
+    pub resultType: spectre::ResultType,
+    pub algorithmVersion: spectre::AlgorithmVersion,
+}
+impl Default for SiteDescriptor {
+    fn default() -> Self {
+        Self{
+            siteName: RefCell::new("".to_owned()),
+            resultType: spectre::ResultTypeDefault,
+            algorithmVersion: spectre::AlgorithmVersionDefault
+        }
+    }
+}
+impl std::fmt::Debug for SiteDescriptor{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result{
+        f.debug_tuple("")
+        .field(&self.siteName)
+        // .field(&self.latitude)
+        .finish()
+    }
+}
 mod imp{
     use super::*;
     use once_cell::sync::{Lazy, OnceCell};
@@ -9,7 +33,8 @@ mod imp{
     #[derive(Debug, Default)]
     pub struct GSite {
        pub site: RefCell<Option<spectre::Site>>,
-       pub is_search: RefCell<bool>
+       pub isSearch: RefCell<bool>,
+       pub siteDescriptor: RefCell<SiteDescriptor>
     }
     #[glib::object_subclass]
     impl ObjectSubclass for GSite {
@@ -17,7 +42,7 @@ mod imp{
         type Type = super::GSite;
         type ParentType = glib::Object;
         fn new() -> Self {
-            Self{site: RefCell::new(None), is_search: RefCell::new(false)}
+            Self{site: RefCell::new(None), isSearch: RefCell::new(false), siteDescriptor: RefCell::new(SiteDescriptor::default())}
         }
     }
     impl ObjectImpl for GSite {
@@ -84,6 +109,21 @@ glib::wrapper! {
 }
 
 impl GSite {
+    pub fn descriptor(&self) -> SiteDescriptor{
+        let self_ = imp::GSite::from_instance(&self);
+        self_.siteDescriptor.borrow().clone()
+    }
+    pub fn set_descriptor_name(&self, name: &str){
+        let self_ = imp::GSite::from_instance(&self);
+        *self_.siteDescriptor.borrow().siteName.borrow_mut() = name.to_owned();
+    }
+    pub fn descriptor_name(&self) -> String {
+        self.descriptor().siteName.borrow().clone()
+    }
+    pub fn update_descriptor(&self, descriptor: SiteDescriptor){
+        let self_ = imp::GSite::from_instance(&self);
+        *self_.siteDescriptor.borrow_mut() = descriptor;
+    }
     pub fn site(&self)-> Option<spectre::Site> {
         let self_ = imp::GSite::from_instance(&self);
         *self_.site.borrow()
@@ -96,14 +136,18 @@ impl GSite {
         s.set_site(site);
         s
     }
+    pub fn name(&self)-> String {
+        let s = self.site();
+        s.unwrap().get_name()
+    }
     pub fn new_search() -> Self {
         let s = GSite::new();
         let self_ = imp::GSite::from_instance(&s);
-        *self_.is_search.borrow_mut() = true;
+        *self_.isSearch.borrow_mut() = true;
         s
     }
     pub fn is_search(&self) -> bool {
-        let is_search = *imp::GSite::from_instance(&self).is_search.borrow();
+        let is_search = *imp::GSite::from_instance(&self).isSearch.borrow();
         is_search
         // *self_.
     }

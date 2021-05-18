@@ -1,7 +1,7 @@
 use std::cell::{RefCell, RefMut};
 use std::env;
 use std::rc::Rc;
-
+use crate::model::g_site::*;
 use crate::spectre;
 use gtk::glib;
 use gtk::gio;
@@ -30,7 +30,7 @@ mod imp {
         password_show_button: RefCell<Option<gtk::Button>>,
         hbox_top: RefCell<Option<gtk::Box>>,
         hbox_bottom: RefCell<Option<gtk::Box>>,
-        pub site_name: Rc<RefCell<Option<String>>>,
+        pub site: RefCell<Option<GSite>>,
         pub user: Rc<RefCell<Option<spectre::User>>>,
         pub user_key: Rc<RefCell<Option<spectre::UserKey>>>,
     }
@@ -168,11 +168,23 @@ impl PasswordListBox {
         //*self_.user.borrow_mut() = *usr.borrow();
     }
 
-    pub fn set_site_name(&self, name: &str) {
+    // pub fn set_site_name(&self, name: &str) {
+    //     let self_ = imp::PasswordListBox::from_instance(&self);
+    //     // self_.password_label.borrow().as_ref().unwrap().set_text(spectre::site_result(name, user_key: UserKey, result_type: ResultType, algorithm_version: AlgorithmVersion));
+    //     self_.site_label.borrow().as_ref().unwrap().set_text(name);
+    //     *self_.site.borrow().name().borrow_mut() = Some(String::from(name));
+    //     self_
+    //         .password_label
+    //         .borrow()
+    //         .as_ref()
+    //         .unwrap()
+    //         .set_text(&self.get_password());
+    // }
+    pub fn set_site(&self, site: &GSite) {
         let self_ = imp::PasswordListBox::from_instance(&self);
         // self_.password_label.borrow().as_ref().unwrap().set_text(spectre::site_result(name, user_key: UserKey, result_type: ResultType, algorithm_version: AlgorithmVersion));
-        self_.site_label.borrow().as_ref().unwrap().set_text(name);
-        *self_.site_name.borrow_mut() = Some(String::from(name));
+        self_.site_label.borrow().as_ref().unwrap().set_text(&site.name());
+        *self_.site.borrow_mut() = Some(site.clone());
         self_
             .password_label
             .borrow()
@@ -187,7 +199,7 @@ impl PasswordListBox {
         // TODO remove hardcoded password_type
         let password_type: spectre::ResultType = spectre::ResultType::TemplateLong;
         spectre::site_result(
-            self_.site_name.borrow().as_ref().unwrap().as_str(),
+            &self_.site.borrow().as_ref().unwrap().name(),
             *self_.user_key.borrow().as_ref().unwrap(),
             password_type,
             spectre::AlgorithmVersionDefault,

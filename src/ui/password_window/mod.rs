@@ -2,7 +2,7 @@ use std::cell::{RefCell, RefMut};
 use std::rc::Rc;
 
 use super::password_search_box::CopyButtonMode;
-use crate::model::g_site::GSite;
+use crate::model::g_site::{GSite,SiteDescriptor};
 use crate::spectre;
 use crate::ui::{password_list_box::PasswordListBox, password_search_box::PasswordSearchBox};
 use gtk::glib;
@@ -61,22 +61,25 @@ impl PasswordWindow {
         factory.connect_bind(glib::clone!(@weak self as self_clone => move |fact, item| {
             let (prop, search_box, list_box, stack) = PasswordWindow::parse_list_item(item);
             let visible_child = if (prop.is_search()) {
+                search_box.set_site(&prop);
                 "search"
             } else {
-                list_box.set_site_name(&prop.site().unwrap().get_name());
+                // list_box.set_site_name(&prop.site().unwrap().get_name());
+                list_box.set_site(&prop);
                 "pwd"
             };
             stack.set_visible_child_name(visible_child);
             let self_c = self_clone.clone();
             search_box.connect_local("copy-create-activated", false, move |args|{
-                let site_name = args[1].get::<String>().unwrap();
-                println!("copy-create-activated: {}",site_name);
-                self_c.activate_copy_or_create(&site_name);
+                let g_site = args[1].get::<GSite>().unwrap();
+                println!("copy-create-activated: {}",g_site.descriptor_name());
+                self_c.activate_copy_or_create(&g_site);
                 None
             });
             let self_c = self_clone.clone();
             search_box.connect_local("search-changed", false, move |args|{
-                let site_name = args[1].get::<String>().unwrap();
+                let site = args[1].get::<GSite>().unwrap();
+                let site_name = site.descriptor_name();
                 self_c.filter_site_list(&site_name);
                 println!("search-changed: {}",&site_name);
                 None
@@ -145,30 +148,28 @@ impl PasswordWindow {
         });
         println!("filtering with: {}", filter);
     }
-    pub fn activate_copy_or_create(&self, site_name: &String) {
+    pub fn activate_copy_or_create(&self, site: &GSite) {
         let self_ = &imp::PasswordWindow::from_instance(self);
         let usr = self_.user.clone();
         let key = self_.user_key.clone();
-        // TODO remove hardcoded password_type
-        let password_type: spectre::ResultType = spectre::ResultType::TemplateLong;
-
-        if usr.borrow().as_ref().unwrap().has_site(site_name) {
-            let pwd = spectre::site_result(&site_name, *key.borrow().as_ref().unwrap(), password_type, spectre::AlgorithmVersionDefault);
+        
+        let site_des = site.descriptor();
+        if usr.borrow().as_ref().unwrap().has_site(&site_des.siteName.borrow()) {
+            let pwd = spectre::site_result(&site_des.siteName.borrow(), *key.borrow().as_ref().unwrap(), site_des.resultType, site_des.algorithmVersion);
             helper::copy_to_clipboard_with_notification(&self_.list_view, &pwd);
             self.hide();
         } else {
             let user_clone = self_.user.clone();
             let self_clone = self.clone();
-            let name_clone = site_name.clone();
+            let site_clone = site.clone();
             let window = self_.list_view.root().unwrap().downcast::<gtk::Window>().ok().unwrap();
-            PasswordWindow::show_accept_new_site_dialog(&window, &site_name, move || {
-                user_clone.borrow_mut().as_mut().unwrap().add_site(
-                    name_clone.clone().as_str(),
-                    spectre::ResultType::TemplateLong,
+            PasswordWindow::show_accept_new_site_dialog(&window, &site_des.clone().siteName.borrow(), move || {
+                site_clone.set_site(&user_clone.borrow_mut().as_mut().unwrap().add_site(
+                    &site_des.siteName.borrow(),
+                    site_des.resultType,
                     1,
-                    spectre::AlgorithmVersionDefault,
-                );
-
+                    site_des.algorithmVersion,
+                ));
                 match spectre::marshal_write_to_file(spectre::MarshalFormat::flat, *usr.borrow().as_ref().unwrap()) {
                     Ok(a) => println!("succsesfully wrote to file"),
                     Err(r) => println!("err {}", r),
