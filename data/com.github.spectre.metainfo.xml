@@ -28,6 +28,11 @@
   <url type="homepage">https://github.com/toger5/Spectre-gtk</url>
   <content_rating type="oars-1.0" />
   <releases>
+    <release version="0.0.6" date="2021-10-05">
+      <description>
+        <p>Password type and version can now be choosen.</p>
+      </description>
+    </release>
     <release version="0.0.5" date="2021-10-05">
       <description>
         <p>Add filter functionality</p>
