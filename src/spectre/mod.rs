@@ -5,7 +5,7 @@ use std::fmt::Debug;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::PathBuf;
-extern crate num;
+pub extern crate num;
 
 pub type UserKey = spectrebind::SpectreUserKey;
 impl Debug for UserKey{
@@ -24,7 +24,7 @@ impl Default for UserKey{
     }
 }
 #[repr(u32)]
-#[derive(FromPrimitive, Clone, Copy)]
+#[derive(FromPrimitive, Clone, Copy, PartialEq)]
 pub enum AlgorithmVersion {
     /** V0 did math with chars whose signedness was platform-dependent. */
     V0 = spectrebind::SpectreAlgorithmV0,
@@ -39,7 +39,7 @@ pub const AlgorithmVersionDefault: AlgorithmVersion = AlgorithmVersion::V3;
 pub const AlgorithmVersionLatest: AlgorithmVersion = AlgorithmVersion::V3;
 
 #[repr(u32)]
-#[derive(FromPrimitive, Clone, Copy)]
+#[derive(FromPrimitive, Clone, Copy, PartialEq)]
 pub enum ResultType {
     /** 16: pg^VMAUBk5x3p%HP%i4= */
     TemplateMaximum = spectrebind::SpectreResultTemplateMaximum,
@@ -64,6 +64,50 @@ pub enum ResultType {
     StatefulDevice = spectrebind::SpectreResultStateDevice,
     /** 4160: Derive a unique binary key. */
     DeriveKey = spectrebind::SpectreResultDeriveKey,
+}
+impl ResultType {
+    pub fn iterable() -> Vec<ResultType> {
+        vec![ResultType::TemplateMaximum,
+        ResultType::TemplateLong,
+        ResultType::TemplateMedium,
+        ResultType::TemplateShort,
+        ResultType::TemplateBasic,
+        ResultType::TemplatePIN,
+        ResultType::TemplateName,
+        ResultType::TemplatePhrase]
+    }
+}
+impl std::str::FromStr for ResultType {
+    type Err = std::string::ParseError;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+
+        match s {
+            "Maximum" => return Ok(ResultType::TemplateMaximum),
+            "Long" => return Ok(ResultType::TemplateLong),
+            "Medium" => return Ok(ResultType::TemplateMedium),
+            "Short" => return Ok(ResultType::TemplateShort),
+            "Basic" => return Ok(ResultType::TemplateBasic),
+            "PIN" => return Ok(ResultType::TemplatePIN),
+            "Name" => return Ok(ResultType::TemplateName),
+            "Phrase" => return Ok(ResultType::TemplatePhrase),
+            default => return Ok(ResultTypeDefault)
+        }
+    }
+}
+impl std::string::ToString for ResultType {
+    fn to_string(&self) -> String {
+        match self {
+            ResultType::TemplateMaximum => return "Maximum".to_owned(),
+            ResultType::TemplateLong => return "Long".to_owned(),
+            ResultType::TemplateMedium => return "Medium".to_owned(),
+            ResultType::TemplateShort => return "Short".to_owned(),
+            ResultType::TemplateBasic => return "Basic".to_owned(),
+            ResultType::TemplatePIN => return "PIN".to_owned(),
+            ResultType::TemplateName => return "Name".to_owned(),
+            ResultType::TemplatePhrase => return "Phrase".to_owned(),
+            default => return "".to_owned()
+        }
+    }
 }
 pub const ResultTypeDefault: ResultType = ResultType::TemplateLong;
 
@@ -263,6 +307,9 @@ impl Site {
             Err(_) => panic!("SystemTime before UNIX EPOCH!"),
         }
     }
+    pub fn last_used(&self) -> i64 {
+        self.lastUsed as i64
+    }
     pub fn get_algorithm(&self) -> AlgorithmVersion {
         num::FromPrimitive::from_u32(self.loginType as u32).unwrap()
     }
@@ -368,7 +415,6 @@ impl User {
     pub fn has_site(&self, site_name: &String) -> bool {
         for s in self.get_sites() {
             unsafe {
-                println!("{:?}",s.as_ref().unwrap().get_name());
                 if (*s).get_name() == site_name.clone() {
                     return true;
                 }

@@ -23,7 +23,7 @@ pub mod helper {
         widget.clipboard().set_text(text);
         let app = widget.root().unwrap().downcast::<gtk::Window>().ok().unwrap().application().unwrap();
         let noti = gtk::gio::Notification::new("Password copied!");
-        noti.set_body(Some("It can be pasted anywhere using ctrl+v."));
+        noti.set_body(Some("It can be pasted anywhere using Ctrl+V."));
         app.send_notification(Some("copy-notification"), &noti);
     }
 }
@@ -115,7 +115,7 @@ impl PasswordWindow {
         // let store = self_.string_store.model().unwrap().downcast::<gtk::StringList>().ok().unwrap();
         let store = self.get_store();
         // store.append("___search");
-        store.append(&GSite::new_search());
+        store.append(&self_.entry_site);
         for site in site_list.iter().rev() {
             unsafe {
                 let site_name: String = (**site).get_name();
@@ -133,7 +133,7 @@ impl PasswordWindow {
     fn get_store(&self) -> gtk::gio::ListStore {
         let self_ = &imp::PasswordWindow::from_instance(self);
         let store = &self_.filter_store;
-        store.model().unwrap().downcast::<gtk::gio::ListStore>().unwrap()
+        store.model().unwrap().downcast::<gtk::SortListModel>().unwrap().model().unwrap().downcast::<gtk::gio::ListStore>().unwrap()
     }
 
     pub fn filter_site_list(&self, filter_str: &str) {
@@ -146,7 +146,6 @@ impl PasswordWindow {
             let s = g_site.site().unwrap().get_name();
             s.contains(&f_str)
         });
-        println!("filtering with: {}", filter);
     }
     pub fn activate_copy_or_create(&self, site: &GSite) {
         let self_ = &imp::PasswordWindow::from_instance(self);
@@ -155,7 +154,7 @@ impl PasswordWindow {
         
         let site_des = site.descriptor();
         if usr.borrow().as_ref().unwrap().has_site(&site_des.siteName.borrow()) {
-            let pwd = spectre::site_result(&site_des.siteName.borrow(), *key.borrow().as_ref().unwrap(), site_des.resultType, site_des.algorithmVersion);
+            let pwd = site.get_password(*key.borrow().as_ref().unwrap());
             helper::copy_to_clipboard_with_notification(&self_.list_view, &pwd);
             self.hide();
         } else {

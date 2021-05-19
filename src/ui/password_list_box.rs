@@ -121,7 +121,9 @@ mod imp {
             copy_button.set_size_request(120, -1);
             copy_button.add_css_class("suggested-action");
             copy_button.connect_clicked(glib::clone!(@weak obj, @weak copy_button => move |_| {
-                crate::ui::password_window::helper::copy_to_clipboard_with_notification(&copy_button, &obj.get_password());
+                let self_ = PasswordListBox::from_instance(&obj);
+                crate::ui::password_window::helper::copy_to_clipboard_with_notification(&copy_button, &self_.site.borrow().as_ref().unwrap().get_password(*self_.user_key.borrow().as_ref().unwrap()));
+                
             }));
             hbox_bottom.append(&copy_button);
 
@@ -182,7 +184,6 @@ impl PasswordListBox {
     // }
     pub fn set_site(&self, site: &GSite) {
         let self_ = imp::PasswordListBox::from_instance(&self);
-        // self_.password_label.borrow().as_ref().unwrap().set_text(spectre::site_result(name, user_key: UserKey, result_type: ResultType, algorithm_version: AlgorithmVersion));
         self_.site_label.borrow().as_ref().unwrap().set_text(&site.name());
         *self_.site.borrow_mut() = Some(site.clone());
         self_
@@ -190,19 +191,25 @@ impl PasswordListBox {
             .borrow()
             .as_ref()
             .unwrap()
-            .set_text(&self.get_password());
+            .set_text(&self_.site.borrow().as_ref().unwrap().get_password(*self_.user_key.borrow().as_ref().unwrap()));
     }
 
-    pub fn get_password(&self) -> String {
-        let self_ = imp::PasswordListBox::from_instance(&self);
+    // pub fn get_password(&self) -> String {
+    //     let self_ = imp::PasswordListBox::from_instance(&self);
 
-        // TODO remove hardcoded password_type
-        let password_type: spectre::ResultType = spectre::ResultType::TemplateLong;
-        spectre::site_result(
-            &self_.site.borrow().as_ref().unwrap().name(),
-            *self_.user_key.borrow().as_ref().unwrap(),
-            password_type,
-            spectre::AlgorithmVersionDefault,
-        )
-    }
+    //     // TODO remove hardcoded password_type
+    //     let password_type: spectre::ResultType = spectre::ResultType::TemplateLong;
+    //     let site_name = self_.site.borrow().as_ref().unwrap().name();
+    //     if site_name.len() > 0{
+    //         spectre::site_result(
+    //             &self_.site.borrow().as_ref().unwrap().name(),
+    //             *self_.user_key.borrow().as_ref().unwrap(),
+    //             password_type,
+    //             spectre::AlgorithmVersionDefault,
+    //         )
+    //     }else{
+    //         String::from("")
+    //     }
+        
+    // }
 }

@@ -7,7 +7,7 @@ pub struct PasswordWindow {
     // pub string_store: gtk::FilterListModel,
     pub filter_store: gtk::FilterListModel,
     pub list_view: gtk::ListView,
-    pub entry_site_name: Option<String>,
+    pub entry_site: GSite,
     // pub signal_search_changed: Rc<RefCell<Option<glib::signal::SignalHandlerId>>>,
     // pub signal_copy_create_activated: Rc<RefCell<Option<glib::signal::SignalHandlerId>>>,
 }
@@ -20,29 +20,28 @@ impl ObjectSubclass for PasswordWindow {
 
     fn new() -> Self {
         Self {
-            // string_store: gtk::StringList::new(&[]),
             filter_store: {
-                let stringx = gtk::PropertyExpression::new(gtk::StringObject::static_type(), gtk::NONE_EXPRESSION, "string");
-                let filter = gtk::StringFilter::new(Some(&stringx));
-                // filter.set_search(Some(""));
-                filter.set_match_mode(gtk::StringFilterMatchMode::Substring);
-                // let filter = gtk::StringFilterBuilder::new()
-                //     .match_mode(gtk::StringFilterMatchMode::Substring)
-                //     .expression(&stringx)
-                //     .search("te")
-                //     .build();
+                let custom_sorter = gtk::CustomSorter::new(|a,b| {
+                    let a_site = a.clone().downcast::<GSite>().ok().unwrap();
+                    let b_site = b.clone().downcast::<GSite>().ok().unwrap();
+                    if a_site.is_search() {return gtk::Ordering::Smaller;}
+                    if b_site.is_search() {return gtk::Ordering::Larger;}
+                    match a_site.site().unwrap().last_used() > b_site.site().unwrap().last_used() {
+                        true => gtk::Ordering::Smaller,
+                        false => gtk::Ordering::Larger
+                    }
+                });
                 use gtk::gio;
                 use crate::model::g_site::GSite;
                 let custom_filter = gtk::CustomFilter::new(|_| true);
                 
                 let site_store = gio::ListStore::new(GSite::static_type());
-                // site_store.append(GSite(spectre::Site));
-                // gtk::FilterListModel::new(Some(&gtk::StringList::new(&[])), Some(&custom_filter))
-                gtk::FilterListModel::new(Some(&site_store), Some(&custom_filter))
+                let sort_site_store = gtk::SortListModel::new(Some(&site_store), Some(&custom_sorter));
+                gtk::FilterListModel::new(Some(&sort_site_store), Some(&custom_filter))
             
             },
             list_view: gtk::ListView::new(Option::<&gtk::NoSelection>::None, Option::<&gtk::SignalListItemFactory>::None),
-            entry_site_name: Option::<String>::None,
+            entry_site: GSite::new_search(),
             user: Rc::new(RefCell::new(None)),
             user_key: Rc::new(RefCell::new(None)),
             // signal_search_changed: Rc::new(RefCell::new(None)),

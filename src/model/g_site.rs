@@ -117,6 +117,20 @@ impl GSite {
         let self_ = imp::GSite::from_instance(&self);
         *self_.siteDescriptor.borrow().siteName.borrow_mut() = name.to_owned();
     }
+    pub fn set_descriptor_version(&self, version: spectre::AlgorithmVersion){
+        self.update_descriptor(SiteDescriptor{
+            siteName: RefCell::new(self.descriptor().siteName.borrow().to_owned()),
+            resultType: self.descriptor().resultType,
+            algorithmVersion: version
+        });
+    }
+    pub fn set_descriptor_type(&self, p_type: spectre::ResultType){
+        self.update_descriptor(SiteDescriptor{
+            siteName: RefCell::new(self.descriptor().siteName.borrow().to_owned()),
+            resultType: p_type,
+            algorithmVersion: self.descriptor().algorithmVersion
+        });
+    }
     pub fn descriptor_name(&self) -> String {
         self.descriptor().siteName.borrow().clone()
     }
@@ -149,11 +163,20 @@ impl GSite {
     pub fn is_search(&self) -> bool {
         let is_search = *imp::GSite::from_instance(&self).isSearch.borrow();
         is_search
-        // *self_.
     }
     pub fn set_site(&self, new_site : &spectre::Site){
         let self_ = imp::GSite::from_instance(&self);
         self_.site.replace(Some(*new_site));
+    }
+    pub fn get_password(&self, key : spectre::UserKey) -> String {
+        let d = self.descriptor();
+        if d.siteName.borrow().len() > 0{
+            println!("Generated pwd with version: V{:?}",d.algorithmVersion as i32);
+            let res = spectre::site_result(&d.siteName.borrow(), key, d.resultType, d.algorithmVersion);
+            res
+        }else{
+            String::from("")
+        }
     }
 }
 
