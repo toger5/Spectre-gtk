@@ -22,7 +22,8 @@ impl std::fmt::Debug for SiteDescriptor{
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result{
         f.debug_tuple("")
         .field(&self.siteName)
-        // .field(&self.latitude)
+        .field(&self.resultType.to_string())
+        .field(&self.algorithmVersion.to_string())
         .finish()
     }
 }
@@ -167,6 +168,10 @@ impl GSite {
     pub fn set_site(&self, new_site : &spectre::Site){
         let self_ = imp::GSite::from_instance(&self);
         self_.site.replace(Some(*new_site));
+        self.set_descriptor_name(&new_site.get_name());
+        self.set_descriptor_version(new_site.get_algorithm());
+        self.set_descriptor_type(new_site.get_resultType());
+        println!("{:?}", self.descriptor());
     }
     pub fn get_password(&self, key : spectre::UserKey) -> String {
         let d = self.descriptor();

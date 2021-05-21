@@ -98,10 +98,8 @@ impl PasswordWindow {
 
     pub fn parse_list_item(item: &gtk::ListItem) -> (GSite, PasswordSearchBox, PasswordListBox, gtk::Stack) {
         let stack = item.child().unwrap().downcast::<gtk::Stack>().ok().unwrap();
-        (
-            
+        (   
             item.item().unwrap().downcast::<GSite>().ok().unwrap(),
-            // item.item().unwrap().property("string").ok().unwrap().get::<String>().ok().unwrap(),
             stack.child_by_name("search").unwrap().downcast::<PasswordSearchBox>().ok().unwrap(),
             stack.child_by_name("pwd").unwrap().downcast::<PasswordListBox>().ok().unwrap(),
             stack,
@@ -119,7 +117,6 @@ impl PasswordWindow {
         for site in site_list.iter().rev() {
             unsafe {
                 let site_name: String = (**site).get_name();
-                // store.append(&site_name);
                 store.append(&GSite::new_with_site(&**site));
             }
         }

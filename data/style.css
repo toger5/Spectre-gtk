@@ -36,7 +36,8 @@ button.tiny:checked{
 	font-size: 25px;
 }
 .pwd-preview{
-	font-size: 40px;
+	font-size: 35px;
+	margin-bottom: 15px;
 }
 button.create-action{
 	background-color:#2EC27E;

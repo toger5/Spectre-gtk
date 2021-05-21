@@ -37,7 +37,17 @@ pub enum AlgorithmVersion {
 }
 pub const AlgorithmVersionDefault: AlgorithmVersion = AlgorithmVersion::V3;
 pub const AlgorithmVersionLatest: AlgorithmVersion = AlgorithmVersion::V3;
-
+impl std::string::ToString for AlgorithmVersion {
+    fn to_string(&self) -> String {
+        match self {
+            AlgorithmVersion::V0 => return "V0".to_owned(),
+            AlgorithmVersion::V1 => return "V1".to_owned(),
+            AlgorithmVersion::V2 => return "V2".to_owned(),
+            AlgorithmVersion::V3 => return "V3".to_owned(),
+            default => return "version_unknown".to_owned()
+        }
+    }
+}
 #[repr(u32)]
 #[derive(FromPrimitive, Clone, Copy, PartialEq)]
 pub enum ResultType {
@@ -94,6 +104,11 @@ impl std::str::FromStr for ResultType {
         }
     }
 }
+// impl std::fmt::Display for ResultType {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//             write!(f, "{}", &self.to_string())
+//     }
+// }
 impl std::string::ToString for ResultType {
     fn to_string(&self) -> String {
         match self {
@@ -311,10 +326,17 @@ impl Site {
         self.lastUsed as i64
     }
     pub fn get_algorithm(&self) -> AlgorithmVersion {
-        num::FromPrimitive::from_u32(self.loginType as u32).unwrap()
+        num::FromPrimitive::from_u32(self.algorithm as u32).unwrap()
     }
-    pub fn get_loginType(&self) -> ResultType {
-        num::FromPrimitive::from_u32(self.loginType as u32).unwrap()
+    pub fn get_resultType(&self) -> ResultType {
+        match num::FromPrimitive::from_u32(self.resultType as u32) {
+            Some(res) => res,
+            None => {
+                println!("{}",self.resultType);
+                println!("Could not get result type from loginType");
+                ResultTypeDefault
+            }
+        }
     }
 }
 impl PartialEq for Site {

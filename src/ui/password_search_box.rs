@@ -49,7 +49,7 @@ mod imp {
             self.parent_constructed(obj);
             obj.set_css_classes(&["view", "top", "bottom"]);
             obj.set_halign(Align::Center);
-            obj.set_size_request(450, -1);
+            obj.set_size_request(490, -1);
             obj.set_valign(Align::Start);
             obj.set_orientation(Orientation::Vertical);
             obj.set_spacing(20);
@@ -60,6 +60,7 @@ mod imp {
                 .hexpand_set(true)
                 .halign(Align::Fill)
                 .label("Password")
+                .margin_bottom(30)
                 .css_classes(vec![String::from("monospace"), String::from("pwd-preview")])
                 .build();
             obj.append(&password_label);
@@ -72,7 +73,8 @@ mod imp {
 
             let site_entry = EntryBuilder::new()
                 .halign(Align::Fill)
-                .css_classes(vec![String::from("site-name-entry"), String::from("pwd-preview")])
+                .valign(Align::Fill)
+                .css_classes(vec![String::from("site-name-entry")])
                 .hexpand(true)
                 .build();
             hbox_top.append(&site_entry);
