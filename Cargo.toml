@@ -16,15 +16,10 @@ num-traits = "0.2"
 num-derive = "0.2"
 pango = "0.9.1"
 libc = "0.2.91"
-
 [dependencies.gtk]
 package = "gtk4"
-git = "https://github.com/gtk-rs/gtk4-rs"
-#rev = "598362f0111bca65ff07203bf8f38a3da7ea29d5"
-
-[dependencies.gdk]
-git = "https://github.com/gtk-rs/gtk4-rs/"
-package = "gdk4"
+version = "0.1.0"
+features = ["v4_2"]
 
 #[dependencies.adw]
 #package = "libadwaita"

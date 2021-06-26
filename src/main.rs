@@ -9,9 +9,8 @@ use std::collections::HashMap;
 use std::ffi::{CStr, CString};
 use std::mem;
 use std::rc::Rc;
-extern crate gdk;
-extern crate gtk;
 extern crate libc;
+use gtk::gdk;
 use gdk::gio;
 use gio::prelude::*;
 use glib::prelude::*;
@@ -77,7 +76,7 @@ fn main() {
 fn load_custom_styling() {
     let provider = gtk::CssProvider::new();
     provider.load_from_data(include_str!("../data/style.css").as_bytes());
-    gtk::StyleContext::add_provider_for_display(&gdk::Display::default().unwrap(), &provider, 500);
+    gtk::StyleContext::add_provider_for_display(&gtk::gdk::Display::default().unwrap(), &provider, 500);
 }
 
 fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<String, Window>>>) {
