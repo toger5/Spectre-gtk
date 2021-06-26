@@ -61,10 +61,11 @@ impl PasswordWindow {
         factory.connect_bind(glib::clone!(@weak self as self_clone => move |fact, item| {
             let (prop, search_box, list_box, stack) = PasswordWindow::parse_list_item(item);
             let visible_child = if (prop.is_search()) {
+                let d = prop.descriptor();
+                println!("d: {:?}",d);
                 search_box.set_site(&prop);
                 "search"
             } else {
-                // list_box.set_site_name(&prop.site().unwrap().get_name());
                 list_box.set_site(&prop);
                 "pwd"
             };
@@ -78,22 +79,17 @@ impl PasswordWindow {
             });
             let self_c = self_clone.clone();
             search_box.connect_local("search-changed", false, move |args|{
+                let self_ = imp::PasswordWindow::from_instance(&self_c);
                 let site = args[1].get::<GSite>().unwrap();
+                println!("old_desc: {:?}", self_.entry_site.descriptor());
+                println!("new_desc: {:?}", site.descriptor());
+                self_.entry_site.set_descriptor(site.descriptor());
                 let site_name = site.descriptor_name();
                 self_c.filter_site_list(&site_name);
                 println!("search-changed: {}",&site_name);
                 None
             });
-            // let itemx = gtk::PropertyExpression::new(gtk::ListItem::static_type(), gtk::NONE_EXPRESSION, "item");
-            // let stringx = gtk::PropertyExpression::new(gtk::StringObject::static_type(), Some(&itemx), "string");
-            // println!("evaluation of stirngx: {}", stringx.evaluate(Some(item)).unwrap().get::<String>().unwrap());
         }));
-        // factory.connect_unbind(|fact, item| {
-        // let (prop, search_box, _, _) = PasswordWindow::parse_list_item(item);
-        // if prop == "___search" {
-        //     search_box.set_site_name(&prop);
-        // }
-        // });
     }
 
     pub fn parse_list_item(item: &gtk::ListItem) -> (GSite, PasswordSearchBox, PasswordListBox, gtk::Stack) {
@@ -109,10 +105,8 @@ impl PasswordWindow {
     pub fn fill_site_list(&self) {
         let self_ = &imp::PasswordWindow::from_instance(self);
         let site_list = self_.user.borrow().unwrap().get_sites();
-        self.get_store().remove_all();
-        // let store = self_.string_store.model().unwrap().downcast::<gtk::StringList>().ok().unwrap();
         let store = self.get_store();
-        // store.append("___search");
+        store.remove_all();
         store.append(&self_.entry_site);
         for site in site_list.iter().rev() {
             unsafe {

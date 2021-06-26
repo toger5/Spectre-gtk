@@ -3,6 +3,7 @@ use crate::spectre;
 use gtk::gio;
 use gtk::glib;
 use gtk::prelude::*;
+use gtk::{Label};
 use gtk::subclass::prelude::*;
 use std::cell::{RefCell, RefMut};
 use std::env;
@@ -25,7 +26,7 @@ mod imp {
         /// and removed in `unparent()`. Therefore, this field could be a `WeakRef<gtk::Widget>`.
         /// Using a strong reference is just a little clearer.
         pub site_label: RefCell<Option<gtk::Label>>,
-        copy_button: RefCell<Option<gtk::Button>>,
+        pub copy_button: RefCell<Option<gtk::Button>>,
         pub password_label: RefCell<Option<gtk::Entry>>,
         password_show_button: RefCell<Option<gtk::Button>>,
         hbox_top: RefCell<Option<gtk::Box>>,
@@ -69,7 +70,7 @@ mod imp {
             let hbox_bottom = gtk::Box::new(gtk::Orientation::Horizontal, 30);
             obj.append(&hbox_bottom);
 
-            let site_label = gtk::Label::new(Some("github.com"));
+            let site_label = Label::new(Some("github.com"));
             site_label.set_hexpand(true);
             site_label.add_css_class("site-name-label");
             hbox_top.append(&site_label);
@@ -123,7 +124,7 @@ mod imp {
             copy_button.set_valign(gtk::Align::End);
             copy_button.set_size_request(120, -1);
             copy_button.add_css_class("suggested-action");
-            copy_button.connect_clicked(glib::clone!(@weak obj, @weak copy_button => move |_| {
+            copy_button.connect_clicked(glib::clone!(@weak obj, @strong copy_button => move |_| {
                 let self_ = PasswordListBox::from_instance(&obj);
                 crate::ui::password_window::helper::copy_to_clipboard_with_notification(&copy_button, &self_.site.borrow().as_ref().unwrap().get_password(*self_.user_key.borrow().as_ref().unwrap()));
             }));

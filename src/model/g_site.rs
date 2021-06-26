@@ -119,14 +119,14 @@ impl GSite {
         *self_.siteDescriptor.borrow().siteName.borrow_mut() = name.to_owned();
     }
     pub fn set_descriptor_version(&self, version: spectre::AlgorithmVersion){
-        self.update_descriptor(SiteDescriptor{
+        self.set_descriptor(SiteDescriptor{
             siteName: RefCell::new(self.descriptor().siteName.borrow().to_owned()),
             resultType: self.descriptor().resultType,
             algorithmVersion: version
         });
     }
     pub fn set_descriptor_type(&self, p_type: spectre::ResultType){
-        self.update_descriptor(SiteDescriptor{
+        self.set_descriptor(SiteDescriptor{
             siteName: RefCell::new(self.descriptor().siteName.borrow().to_owned()),
             resultType: p_type,
             algorithmVersion: self.descriptor().algorithmVersion
@@ -135,7 +135,7 @@ impl GSite {
     pub fn descriptor_name(&self) -> String {
         self.descriptor().siteName.borrow().clone()
     }
-    pub fn update_descriptor(&self, descriptor: SiteDescriptor){
+    pub fn set_descriptor(&self, descriptor: SiteDescriptor){
         let self_ = imp::GSite::from_instance(&self);
         *self_.siteDescriptor.borrow_mut() = descriptor;
     }

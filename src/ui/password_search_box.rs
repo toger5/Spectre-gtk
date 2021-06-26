@@ -267,6 +267,7 @@ impl PasswordSearchBox {
         type_combo_box.connect_changed(glib::clone!(@weak self as self_clone => move |combo_box| {
             let self_ = imp::PasswordSearchBox::from_instance(&self_clone);
             self_.site.borrow().as_ref().unwrap().set_descriptor_type(spectre::ResultType::from_str(&combo_box.active_id().unwrap()).ok().unwrap());
+            self_clone.emit_by_name("search-changed", &[&self_.site.borrow().as_ref().unwrap()]).unwrap();
             self_clone.update_password_label();
         }));
         // button.connect_clicked(clone!(@weak self as tag => move |_btn| {
@@ -280,6 +281,12 @@ impl PasswordSearchBox {
         }
         *self_.site.borrow_mut() = Some(site.clone());
         let new_site_name = site.descriptor_name();
+        //update combo box
+        let type_combo_box = self_.type_combo_box.borrow().as_ref().unwrap().clone();
+        let result_type = site.descriptor().resultType;
+        let a_id = result_type.to_string();
+        // println!("{}", a_id);
+        type_combo_box.set_active_id(Some(&a_id));
         let current_site_name = self_.site_entry.borrow().as_ref().unwrap().text();
         println!("current: {:?}", new_site_name);
         println!("new:     {:?}", current_site_name);
