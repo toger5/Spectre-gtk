@@ -10,29 +10,27 @@ use std::ffi::{CStr, CString};
 use std::mem;
 use std::rc::Rc;
 extern crate libc;
-use gtk::gdk;
 use gdk::gio;
 use gio::prelude::*;
 use glib::prelude::*;
 use glib::{object::Object, FromVariant, GString, ToVariant, Variant};
+use gtk::gdk;
 use gtk::prelude::*;
 use std::fs::File;
+use std::path::Path;
 // use glib;
-use gtk::{
-    glib, Application, ApplicationWindow, Builder, Button, ButtonsType, DialogFlags, Entry, Label,
-    ListItem, MessageDialog, MessageType, Window,
-};
+use gtk::{glib, Application, ApplicationWindow, Builder, Button, ButtonsType, DialogFlags, Entry, Label, ListItem, MessageDialog, MessageType, Window};
 use pango;
 use std::time::SystemTime;
 
-mod ui;
 mod model;
+mod ui;
 
 use ui::password_list_box::PasswordListBox;
 use ui::password_search_box::PasswordSearchBox;
 use ui::spectre_app::SpectreApp;
 
-mod paths;
+// mod paths;
 mod config;
 
 fn main() {
@@ -86,25 +84,15 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
     let builder = Builder::from_string(glade_src);
 
     //login Window
-    let login_window: Window = builder
-        .object("login_window")
-        .expect("Couldn't get login_window");
+    let login_window: Window = builder.object("login_window").expect("Couldn't get login_window");
     login_window.set_resizable(false);
     application.add_window(&login_window);
-    windows
-        .borrow_mut()
-        .insert("login_window".to_owned(), login_window.clone());
+    windows.borrow_mut().insert("login_window".to_owned(), login_window.clone());
 
     // LOGIN UI
-    let name_entry: Entry = builder
-        .object("username")
-        .expect("Couldn't get username Entry");
-    let spectre_entry: Entry = builder
-        .object("masterpassword")
-        .expect("Couldn't get masterpassword Entry");
-    let identicon_label: Label = builder
-        .object("identicon")
-        .expect("Couldn't get identicon Label");
+    let name_entry: Entry = builder.object("username").expect("Couldn't get username Entry");
+    let spectre_entry: Entry = builder.object("masterpassword").expect("Couldn't get masterpassword Entry");
+    let identicon_label: Label = builder.object("identicon").expect("Couldn't get identicon Label");
 
     // LOGIN UI connections
     {
@@ -115,9 +103,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         // let s_store = pwd_list_store.clone();
         let windows_clone = windows.clone();
         spectre_entry.connect_changed(move |_| {
-            identicon_label.set_markup(
-                &spectre::identicon(name.text().as_str(), pwd.text().as_str()).to_markup_string(),
-            );
+            identicon_label.set_markup(&spectre::identicon(name.text().as_str(), pwd.text().as_str()).to_markup_string());
         });
         // let name = name_entry.clone();
         // let pwd = spectre_entry.clone();
@@ -140,17 +126,17 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                 }
                 login(user.clone(),&log_win,&name_entry,&spectre_entry,&application, windows.clone());
             }else{
-                let dialog = gtk::MessageDialog::new( 
+                let dialog = gtk::MessageDialog::new(
                     Some(&log_win),
                     DialogFlags::MODAL,
                     MessageType::Question,
                     ButtonsType::YesNo,
                     "There is no user with that name.\n Do you want to create a new User file?");
                 dialog.set_secondary_text(Some(&format!("A new file will be created:\nat: {}", path.to_str().unwrap())));
-                dialog.connect_response(
+                dialog.connect_response( 
                     glib::clone!(@strong user,@weak log_win,@weak name_entry,@weak spectre_entry,@weak application,@weak windows => move |dialog, response| {
                     println!("{}",response);
-                        match response {
+                    match response {
                         gtk::ResponseType::Yes => {
                             *user.borrow_mut() = Some(spectre::User::create(
                             name_entry.text().as_str(),
@@ -158,11 +144,16 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                             spectre::AlgorithmVersionDefault,
                             ));
                             dialog.emit_close();
+                            let p = path.clone();
+                            match std::fs::create_dir_all(p.parent().unwrap()){
+                                Ok(a) => println!("successfully created directories for save path"),
+                                Err(r) => println!("err while creating directories {}", r),
+                            };
                             match spectre::marshal_write_to_file(
                                 spectre::MarshalFormat::flat,
                                 user.borrow().unwrap(),
                             ) {
-                                Ok(a) => println!("succsesfully wrote to file"),
+                                Ok(a) => println!("successfully wrote to file"),
                                 Err(r) => println!("err {}", r),
                             }
                             login(user.clone(), &log_win, &name_entry, &spectre_entry, &application, windows.clone());
@@ -193,20 +184,14 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
                 spectre_entry.text().as_str(),
                 spectre::AlgorithmVersionDefault,
             ));
-            let pwd_window = ui::password_window::PasswordWindow::new(
-                user.clone(),
-                Rc::new(RefCell::new(user_key)),
-            );
+            let pwd_window = ui::password_window::PasswordWindow::new(user.clone(), Rc::new(RefCell::new(user_key)));
             pwd_window.fill_site_list();
             application.add_window(&pwd_window);
             pwd_window.show();
             // pwd_win.fullscreen();
             // pwd_win.set_default_size(500,500);
             // pwd_win.set_resizable(false);
-            windows.borrow_mut().insert(
-                "pwd_window".to_owned(),
-                pwd_window.clone().upcast::<gtk::Window>(),
-            );
+            windows.borrow_mut().insert("pwd_window".to_owned(), pwd_window.clone().upcast::<gtk::Window>());
             println!("{:?}", user.borrow().unwrap().userName);
         };
     }
@@ -218,14 +203,9 @@ fn handle_file_marshal_read_error(err: spectre::FileMarshalReadError, log_win: &
         spectre::FileMarshalReadError::File(io_err) => panic!(io_err),
         spectre::FileMarshalReadError::Marshal(marshal_err) => {
             match marshal_err.type_ {
-                spectre::SpectreMarshalSuccess => MessageDialog::new(
-                    Some(log_win),
-                    DialogFlags::empty(),
-                    MessageType::Error,
-                    ButtonsType::Ok,
-                    "success",
-                )
-                .show(),
+                spectre::SpectreMarshalSuccess => {
+                    MessageDialog::new(Some(log_win), DialogFlags::empty(), MessageType::Error, ButtonsType::Ok, "success").show()
+                }
                 spectre::SpectreMarshalErrorStructure => MessageDialog::new(
                     Some(log_win),
                     DialogFlags::empty(),
