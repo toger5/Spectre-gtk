@@ -1,5 +1,6 @@
 **/*.rs.bk
 .vscode
+!.vscode/launch.json
 target
 .flatpak-builder
 .flatpak-app-dir
