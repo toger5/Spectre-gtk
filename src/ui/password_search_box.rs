@@ -9,6 +9,7 @@ use std::cell::{RefCell, RefMut};
 use std::env;
 use std::rc::Rc;
 use std::str::FromStr;
+
 mod imp {
     use super::*;
     use crate::spectre::num::FromPrimitive;
@@ -56,7 +57,7 @@ mod imp {
             obj.set_margin_bottom(50);
             obj.set_margin_top(50);
 
-            let password_label = gtk::LabelBuilder::new()
+            let password_label = gtk::builders::LabelBuilder::new()
                 .hexpand_set(true)
                 .halign(Align::Fill)
                 .label("Password")
@@ -71,7 +72,7 @@ mod imp {
             let hbox_bottom = gtk::Box::new(gtk::Orientation::Horizontal, 30);
             obj.append(&hbox_bottom);
 
-            let site_entry = EntryBuilder::new()
+            let site_entry = gtk::builders::EntryBuilder::new()
                 .halign(Align::Fill)
                 .valign(Align::Fill)
                 .css_classes(vec![String::from("site-name-entry")])
@@ -125,7 +126,7 @@ mod imp {
             password_show_button.add_css_class("tiny");
             password_show_button.set_has_frame(false);
             hbox_bottom_left_bottom.append(&password_show_button);
-            let create_copy_button = gtk::ButtonBuilder::new()
+            let create_copy_button = gtk::builders::ButtonBuilder::new()
                 .valign(gtk::Align::End)
                 .vexpand(true)
                 .valign(Align::Fill)
@@ -240,7 +241,7 @@ impl PasswordSearchBox {
             {
                 println!("{:?}", self_.site.try_borrow_mut());
             }
-            self_clone.emit_by_name("search-changed", &[&site_clone.borrow().as_ref().unwrap()]).unwrap();
+            self_clone.emit_by_name::<()>("search-changed", &[&site_clone.borrow().as_ref().unwrap()]);
         });
 
         let self_clone = self.clone();
@@ -254,20 +255,20 @@ impl PasswordSearchBox {
         // let self_site = self_.site.borrow().as_ref().unwrap().clone();
         create_copy_button.connect_clicked(glib::clone!(@weak self as self_clone => move |_| {
             let self_ = imp::PasswordSearchBox::from_instance(&self_clone);
-            self_clone.emit_by_name("copy-create-activated",  &[&self_.site.borrow().as_ref().unwrap()]).unwrap();
+            self_clone.emit_by_name::<()>("copy-create-activated",  &[&self_.site.borrow().as_ref().unwrap()]);
         }));
         // let self_site = self_.site.borrow().as_ref().unwrap().clone();
         let site_entry = self_.site_entry.borrow().as_ref().unwrap().clone();
         site_entry.connect_activate(glib::clone!(@weak self as self_clone => move |entry|{
             let self_ = imp::PasswordSearchBox::from_instance(&self_clone);
             let site_clone = self_.site.clone();
-            self_clone.emit_by_name("copy-create-activated",  &[&site_clone.borrow().as_ref().unwrap()]).unwrap();
+            self_clone.emit_by_name::<()>("copy-create-activated",  &[&site_clone.borrow().as_ref().unwrap()]);
         }));
         let type_combo_box = self_.type_combo_box.borrow().as_ref().unwrap().clone();
         type_combo_box.connect_changed(glib::clone!(@weak self as self_clone => move |combo_box| {
             let self_ = imp::PasswordSearchBox::from_instance(&self_clone);
             self_.site.borrow().as_ref().unwrap().set_descriptor_type(spectre::ResultType::from_str(&combo_box.active_id().unwrap()).ok().unwrap());
-            self_clone.emit_by_name("search-changed", &[&self_.site.borrow().as_ref().unwrap()]).unwrap();
+            self_clone.emit_by_name::<()>("search-changed", &[&self_.site.borrow().as_ref().unwrap()]);
             self_clone.update_password_label();
         }));
         // button.connect_clicked(clone!(@weak self as tag => move |_btn| {

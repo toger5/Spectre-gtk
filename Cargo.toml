@@ -16,9 +16,10 @@ num-traits = "0.2"
 num-derive = "0.2"
 pango = "0.9.1"
 libc = "0.2.91"
+
 [dependencies.gtk]
 package = "gtk4"
-version = "0.1.0"
+version = "0.4.6"
 features = ["v4_2"]
 
 #[dependencies.adw]

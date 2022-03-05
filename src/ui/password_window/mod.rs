@@ -14,6 +14,7 @@ glib::wrapper! {
     pub struct PasswordWindow(ObjectSubclass<imp::PasswordWindow>)
     @extends gtk::Widget, gtk::Window, gtk::ApplicationWindow;
 }
+
 pub mod helper {
     use gtk::prelude::*;
     pub fn copy_to_clipboard_with_notification<T>(widget: &T, text: &str)
@@ -27,6 +28,7 @@ pub mod helper {
         app.send_notification(Some("copy-notification"), &noti);
     }
 }
+
 impl PasswordWindow {
     pub fn new(user: Rc<RefCell<Option<spectre::User>>>, user_key: Rc<RefCell<Option<spectre::UserKey>>>) -> Self {
         let self_: PasswordWindow = glib::Object::new(&[]).expect("Failed to create PasswordWindow");
@@ -48,7 +50,7 @@ impl PasswordWindow {
 
         let (user, user_key) = (self_.user.clone(), self_.user_key.clone());
         factory.connect_setup(glib::clone! {@weak self as self_clone @weak user, @weak user_key=>move |fact, item| {
-            let stack = gtk::StackBuilder::new().vhomogeneous(false).build();
+            let stack = gtk::builders::StackBuilder::new().vhomogeneous(false).build();
             let pwd_box = PasswordListBox::new();
             pwd_box.setup_user(user.clone(), user_key.clone());
             stack.add_named(&pwd_box, Some("pwd"));
