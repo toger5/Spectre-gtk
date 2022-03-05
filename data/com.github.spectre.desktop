@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Spectre password
-Comment=Rust Flapaked Gtk Spectre application
+Comment=Rust Gtk Spectre application
 Type=Application
 # should be the same as the Cargo project name
 Exec=spectre-gtk

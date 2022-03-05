@@ -28,6 +28,12 @@
   <url type="homepage">https://github.com/toger5/Spectre-gtk</url>
   <content_rating type="oars-1.0" />
   <releases>
+  <release version="0.0.7" date="2022-03-05">
+      <description>
+        <p>Upgrade to gtk-rs 0.4.6 and fix pwd preview.
+        Fix saving of the *.mpsites files.</p>
+      </description>
+    </release>
     <release version="0.0.6" date="2021-10-05">
       <description>
         <p>Password type and version can now be choosen.</p>
