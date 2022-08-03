@@ -10,16 +10,20 @@ use std::ffi::{CStr, CString};
 use std::mem;
 use std::rc::Rc;
 extern crate libc;
-use gdk::gio;
 use gio::prelude::*;
+use gdk::gio;
 use glib::prelude::*;
 use glib::{object::Object, FromVariant, GString, ToVariant, Variant};
-use gtk::gdk;
-use gtk::prelude::*;
+
 use std::fs::File;
 use std::path::Path;
-// use glib;
-use gtk::{glib, Application, ApplicationWindow, Builder, Button, ButtonsType, DialogFlags, Entry, Label, ListItem, MessageDialog, MessageType, Window};
+
+use adw::prelude::*;
+use adw::{ActionRow, Application, ApplicationWindow, HeaderBar};
+
+use gtk::gdk;
+use gtk::prelude::*;
+use gtk::{glib, Builder, Button, ButtonsType, DialogFlags, Entry, Label, ListItem, MessageDialog, MessageType, Window};
 use pango;
 use std::time::SystemTime;
 
@@ -77,7 +81,7 @@ fn load_custom_styling() {
     gtk::StyleContext::add_provider_for_display(&gtk::gdk::Display::default().unwrap(), &provider, 500);
 }
 
-fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<String, Window>>>) {
+fn build_ui(application: &adw::Application, mut windows: Rc<RefCell<HashMap<String, Window>>>) {
     // const version: spectre::AlgorithmVersion = AlgorithmVersionDefault;
     const password_type: spectre::ResultType = spectre::ResultType::TemplateLong;
     let glade_src = include_str!("gtk_ui_files/windows.ui");
@@ -171,7 +175,7 @@ fn build_ui(application: &gtk::Application, mut windows: Rc<RefCell<HashMap<Stri
         log_win: &gtk::Window,
         name_entry: &gtk::Entry,
         spectre_entry: &gtk::Entry,
-        application: &gtk::Application,
+        application: &adw::Application,
         windows: Rc<RefCell<HashMap<String, Window>>>,
     ) {
         if let Some(_) = *user.borrow() {

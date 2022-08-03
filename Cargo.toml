@@ -22,10 +22,9 @@ package = "gtk4"
 version = "0.4.6"
 features = ["v4_2"]
 
-#[dependencies.adw]
-#package = "libadwaita"
-#git = "https://gitlab.gnome.org/bilelmoussaoui/libadwaita-rs.git"
-#rev = "6088bb634a406402f308f01d2f33067951d5095b"
+[dependencies.adw]
+package = "libadwaita"
+libadwaita = "0.1.1"
 
 [build-dependencies]
 bindgen = "0.57"

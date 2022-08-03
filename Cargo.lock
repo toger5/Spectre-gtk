@@ -652,6 +652,39 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
+name = "libadwaita"
+version = "0.2.0-alpha.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "49ad2318c7abc8629b1d1ed381bd0356c184ae8f4caebc044ef9de1782c86046"
+dependencies = [
+ "futures-channel",
+ "gdk-pixbuf",
+ "gdk4",
+ "gio",
+ "glib 0.15.6",
+ "gtk4",
+ "libadwaita-sys",
+ "libc",
+ "once_cell",
+ "pango 0.15.6",
+]
+
+[[package]]
+name = "libadwaita-sys"
+version = "0.2.0-alpha.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e835f99b92f6e7f43ddb2c0ca79d9d21124a170190876505e03484f337f7edc7"
+dependencies = [
+ "gdk4-sys",
+ "gio-sys",
+ "glib-sys 0.15.6",
+ "gobject-sys 0.15.5",
+ "gtk4-sys",
+ "libc",
+ "system-deps 6.0.2",
+]
+
+[[package]]
 name = "libc"
 version = "0.2.119"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1060,6 +1093,7 @@ dependencies = [
  "cc",
  "dirs",
  "gtk4",
+ "libadwaita",
  "libc",
  "num",
  "num-derive",
