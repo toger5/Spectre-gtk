@@ -1,6 +1,6 @@
 [package]
 name = "spectre-gtk"
-version = "0.0.7"
+version = "0.0.8"
 authors = ["toger5 <toger5@hotmail.de>"]
 edition = "2018"
 build = "build-aux/build.rs"
