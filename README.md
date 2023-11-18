@@ -18,9 +18,10 @@ To only build the flatpak:
 `./build-aux/flatpak-build.sh`
 _To uninstall_
 `flatpak remove com.github.spectre`
-
+### The spectre c library
+The specter c lib is using a linked git submodules: run `git submodule update --init --recursive` to download/add the files locally.
 ### Other requirements
-for Bindgen there needs to be clang installed (and maybe llvm devel packages) see: https://rust-lang.github.io/rust-bindgen/requirements.html
+for Bindgen there needs to be clang and libsodium installed (and maybe llvm devel packages) see: https://rust-lang.github.io/rust-bindgen/requirements.html
 When using Flatpak this should all be available
 
 ## Screenshots

@@ -1,5 +1,8 @@
 extern crate bindgen;
 extern crate cc;
+
+mod platform;
+
 use std::env;
 use std::path::PathBuf;
 
@@ -19,20 +22,33 @@ fn main() {
         .file("src/spectre/api/c/spectre-marshal-util.c")
         .file("src/spectre/api/c/spectre-marshal.c")
         .include("src/spectre/api/c")
+        .include("/opt/homebrew/include/")
         .warnings(false)
         .cargo_metadata(true)
         .define("SPECTRE_SODIUM", Some("1"))
         .compile("libspectre.a");
-    // .file("src/spectre/api/c/mpw-jni.c")
 
     // Tell cargo to tell rustc to link the system mpw .so
     // shared library.
     // all handled by metadata
-    // export LD_LIBRARY_PATH=/home/timo/Programmieren/rust_mpw/src/masterpassword-c/core/lib/linux/x86_64/
-    println!("cargo:rustc-link-search=native={}", "/app/lib/");
-    println!("cargo:rustc-link-lib=sodium");
+    // export LD_LIBRARY_PATH=/home/$USER/Programmieren/rust_mpw/src/masterpassword-c/core/lib/linux/x86_64/
+
+    // for macos libsodium installed with homebrow will only be linkable like this
+    if current_platform::CURRENT_PLATFORM == platform::MACOS {
+        println!("cargo:rustc-link-search=/opt/homebrew/lib");
+        println!("cargo:rustc-link-lib=sodium");
+    }
     // cargo:rustc-link-lib=[KIND=]NAME
 
+    // Tell cargo to look for shared libraries in the specified directory
+    // println!("cargo:rustc-link-search=/path/to/lib");
+
+    // Tell cargo to tell rustc to link the system bzip2
+    // shared library.
+    // println!("cargo:rustc-link-lib=bz2");
+
+    // Tell cargo to invalidate the built crate whenever the wrapper changes
+    // println!("cargo:rerun-if-changed=wrapper.h");
     // The bindgen::Builder is the main entry point
     // to bindgen, and lets you build up options for
     // the resulting bindings.
@@ -40,18 +56,6 @@ fn main() {
         // The input header we would like to generate
         // bindings for.
         .header("src/spectre/spectre_wrapper.h")
-        // .header("src/spectre/api/c/spectre-types.h")
-        // .header("src/spectre/api/c/spectre-marshal.h")
-        // .header("src/spectre/api/c/spectre-marshal-util.h")
-        // .header("src/spectre/api/c/spectre-util.h")
-        // .header("src/spectre/api/c/spectre-algorithm.h")
-        // .disable_name_namespacing()
-        // .constified_enum_module("*")
-        // format the output
-        // .hide_type("SpectreKeyPurpose")
-        // .constified_enum_module("*")
-        .clang_arg("-I/usr/lib/gcc/x86_64-linux-gnu/8/include/")
-        .rustfmt_bindings(true)
         // Finish the builder and generate the bindings.
         .generate()
         // Unwrap the Result and panic on failure.

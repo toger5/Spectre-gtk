@@ -5,18 +5,15 @@ use std::ffi::{CStr, CString};
 use std::mem;
 use std::rc::Rc;
 
-use gio::ApplicationCommandLineExt;
+use gio::ApplicationCommandLine;
 extern crate gtk;
 extern crate libc;
 
 use gio::prelude::*;
-use gtk::prelude::*;
+use gtk::{gio, prelude::*};
 
 use super::spectre;
-use gtk::{
-    Application, ApplicationWindow, Builder, Button, ButtonsType, DialogFlags, Entry, Label,
-    MessageDialog, MessageType, Window,
-};
+use gtk::{Application, ApplicationWindow, Builder, Button, ButtonsType, DialogFlags, Entry, Label, MessageDialog, MessageType, Window};
 use pango;
 use std::time::SystemTime;
 #[test]
@@ -32,46 +29,16 @@ fn test() {
     let m_key: mpw::MasterKey = mpw::master_key("aa", "aa", mpw::AlgorithmVersionDefault);
     println!("key: {:#?}", m_key);
     //test PASSWORD
-    let pwd = mpw::site_result(
-        "matrix",
-        m_key,
-        mpw::ResultType::TemplateLong,
-        mpw::AlgorithmVersion::V3,
-    );
+    let pwd = mpw::site_result("matrix", m_key, mpw::ResultType::TemplateLong, mpw::AlgorithmVersion::V3);
 
     //test Marshal
     let mut user = mpw::User::create("name", "abc", mpw::AlgorithmVersionDefault);
     println!("A");
-    user.add_site(
-        "abc",
-        mpw::ResultType::TemplateLong,
-        0,
-        mpw::AlgorithmVersionDefault,
-    );
-    user.add_site(
-        "der shit",
-        mpw::ResultType::TemplateLong,
-        0,
-        mpw::AlgorithmVersionDefault,
-    );
-    user.add_site(
-        "altabox",
-        mpw::ResultType::TemplateLong,
-        0,
-        mpw::AlgorithmVersionDefault,
-    );
-    user.add_site(
-        "mpwstgug",
-        mpw::ResultType::TemplateLong,
-        0,
-        mpw::AlgorithmVersionDefault,
-    );
-    user.add_site(
-        "sething.org",
-        mpw::ResultType::TemplateLong,
-        0,
-        mpw::AlgorithmVersionDefault,
-    );
+    user.add_site("abc", mpw::ResultType::TemplateLong, 0, mpw::AlgorithmVersionDefault);
+    user.add_site("der shit", mpw::ResultType::TemplateLong, 0, mpw::AlgorithmVersionDefault);
+    user.add_site("altabox", mpw::ResultType::TemplateLong, 0, mpw::AlgorithmVersionDefault);
+    user.add_site("mpwstgug", mpw::ResultType::TemplateLong, 0, mpw::AlgorithmVersionDefault);
+    user.add_site("sething.org", mpw::ResultType::TemplateLong, 0, mpw::AlgorithmVersionDefault);
     // for s in user.get_sites().iter_mut() {
     //     (*s).lastUsed = SystemTime::now()
     //         .duration_since(SystemTime::UNIX_EPOCH)
@@ -84,12 +51,7 @@ fn test() {
     // }
 
     println!("A");
-    mpw::site_result(
-        "abc",
-        m_key,
-        mpw::ResultType::TemplateLong,
-        mpw::AlgorithmVersionDefault,
-    );
+    mpw::site_result("abc", m_key, mpw::ResultType::TemplateLong, mpw::AlgorithmVersionDefault);
     println!("C");
     // println!(
     //     "some marshal file: \n {}",
@@ -100,23 +62,12 @@ fn test() {
         Err(r) => println!("err {}", r),
     }
     println!("B");
-    match mpw::marshal_read_from_file(
-        "TESTmpsites.txt",
-        mpw::MarshalFormat::flat,
-        "abc".to_string(),
-    ) {
+    match mpw::marshal_read_from_file("TESTmpsites.txt", mpw::MarshalFormat::flat, "abc".to_string()) {
         Ok(usr) => {
             unsafe {
-                println!(
-                    "user site 1) {}",
-                    CStr::from_ptr(usr.fullName).to_string_lossy().into_owned()
-                );
+                println!("user site 1) {}", CStr::from_ptr(usr.fullName).to_string_lossy().into_owned());
                 for s in usr.get_sites() {
-                    println!(
-                        "We have a site: {}, and it has uses {}",
-                        (*s).get_name(),
-                        (*s).get_uses()
-                    );
+                    println!("We have a site: {}, and it has uses {}", (*s).get_name(), (*s).get_uses());
                 }
             };
             //here we have the loaded usr

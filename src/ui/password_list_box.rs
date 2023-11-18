@@ -3,8 +3,8 @@ use crate::spectre;
 use gtk::gio;
 use gtk::glib;
 use gtk::prelude::*;
-use gtk::{Label};
 use gtk::subclass::prelude::*;
+use gtk::Label;
 use std::cell::{RefCell, RefMut};
 use std::env;
 use std::rc::Rc;
@@ -92,19 +92,19 @@ mod imp {
 
             let hbox_linked = gtk::Box::new(gtk::Orientation::Horizontal, 0);
             hbox_linked.add_css_class("linked");
-            
+
             let password_type_button = gtk::Button::with_label("type");
             password_type_button.add_css_class("tiny");
             password_type_button.set_sensitive(false);
             hbox_linked.append(&password_type_button);
-            
+
             let password_version_button = gtk::Button::with_label("version");
             password_version_button.add_css_class("tiny");
             password_version_button.set_sensitive(false);
             hbox_linked.append(&password_version_button);
-            
+
             hbox_bottom_left_bottom.append(&hbox_linked);
-            
+
             let password_show_button = gtk::Button::with_label("Hidden");
             password_show_button.set_halign(gtk::Align::End);
             password_show_button.add_css_class("tiny");
@@ -164,10 +164,9 @@ impl PasswordListBox {
     }
 
     pub fn setup_user(&self, usr: Rc<RefCell<Option<spectre::User>>>, usr_key: Rc<RefCell<Option<spectre::UserKey>>>) {
-        let mut self_ = imp::PasswordListBox::from_instance(&self).clone();
+        let mut self_ = imp::PasswordListBox::from_instance(self);
         self_.user.replace(*usr.borrow());
         self_.user_key.replace(*usr_key.borrow());
-        //*self_.user.borrow_mut() = *usr.borrow();
     }
 
     pub fn set_site(&self, site: &GSite) {

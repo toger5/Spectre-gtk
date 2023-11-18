@@ -8,19 +8,10 @@ use std::path::PathBuf;
 pub extern crate num;
 
 pub type UserKey = spectrebind::SpectreUserKey;
-impl Debug for UserKey{
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("spectre::UserKey")
-        .field("bytes", &self.bytes)
-        .field("keyID", &self.keyID.hex)
-        .field("algorithm", &self.algorithm)
-        .finish()
-    }
 
-}
-impl Default for UserKey{
-    fn default() -> UserKey{
-        user_key("","",AlgorithmVersionDefault)
+impl Default for UserKey {
+    fn default() -> UserKey {
+        user_key("", "", AlgorithmVersionDefault)
     }
 }
 #[repr(u32)]
@@ -44,7 +35,7 @@ impl std::string::ToString for AlgorithmVersion {
             AlgorithmVersion::V1 => return "V1".to_owned(),
             AlgorithmVersion::V2 => return "V2".to_owned(),
             AlgorithmVersion::V3 => return "V3".to_owned(),
-            default => return "version_unknown".to_owned()
+            default => return "version_unknown".to_owned(),
         }
     }
 }
@@ -77,20 +68,21 @@ pub enum ResultType {
 }
 impl ResultType {
     pub fn iterable() -> Vec<ResultType> {
-        vec![ResultType::TemplateMaximum,
-        ResultType::TemplateLong,
-        ResultType::TemplateMedium,
-        ResultType::TemplateShort,
-        ResultType::TemplateBasic,
-        ResultType::TemplatePIN,
-        ResultType::TemplateName,
-        ResultType::TemplatePhrase]
+        vec![
+            ResultType::TemplateMaximum,
+            ResultType::TemplateLong,
+            ResultType::TemplateMedium,
+            ResultType::TemplateShort,
+            ResultType::TemplateBasic,
+            ResultType::TemplatePIN,
+            ResultType::TemplateName,
+            ResultType::TemplatePhrase,
+        ]
     }
 }
 impl std::str::FromStr for ResultType {
     type Err = std::string::ParseError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-
         match s {
             "Maximum" => return Ok(ResultType::TemplateMaximum),
             "Long" => return Ok(ResultType::TemplateLong),
@@ -100,7 +92,7 @@ impl std::str::FromStr for ResultType {
             "PIN" => return Ok(ResultType::TemplatePIN),
             "Name" => return Ok(ResultType::TemplateName),
             "Phrase" => return Ok(ResultType::TemplatePhrase),
-            default => return Ok(ResultTypeDefault)
+            default => return Ok(ResultTypeDefault),
         }
     }
 }
@@ -120,7 +112,7 @@ impl std::string::ToString for ResultType {
             ResultType::TemplatePIN => return "PIN".to_owned(),
             ResultType::TemplateName => return "Name".to_owned(),
             ResultType::TemplatePhrase => return "Phrase".to_owned(),
-            default => return "".to_owned()
+            default => return "".to_owned(),
         }
     }
 }
@@ -131,12 +123,7 @@ pub fn name_for_format(format: u32) -> String {
     format_name.to_string_lossy().into_owned()
 }
 
-pub fn site_result(
-    site_name: &str,
-    user_key: UserKey,
-    result_type: ResultType,
-    algorithm_version: AlgorithmVersion,
-) -> String {
+pub fn site_result(site_name: &str, user_key: UserKey, result_type: ResultType, algorithm_version: AlgorithmVersion) -> String {
     let site_res = unsafe {
         CStr::from_ptr(spectrebind::spectre_site_result(
             &user_key,
@@ -151,11 +138,7 @@ pub fn site_result(
     site_res.to_string_lossy().into_owned()
 }
 
-pub fn user_key(
-    full_name: &str,
-    user_password: &str,
-    algorithm_version: AlgorithmVersion,
-) -> UserKey {
+pub fn user_key(full_name: &str, user_password: &str, algorithm_version: AlgorithmVersion) -> UserKey {
     let m_key = unsafe {
         spectrebind::spectre_user_key(
             CString::new(full_name).unwrap().as_ptr(),
@@ -224,8 +207,7 @@ impl From<spectrebind::SpectreIdenticon> for Identicon {
             body: c_char_to_char(mpidenticon.body),
             rightArm: c_char_to_char(mpidenticon.rightArm),
             accessory: c_char_to_char(mpidenticon.accessory),
-            color: num::FromPrimitive::from_u32(mpidenticon.color as u32)
-                .unwrap_or(IdenticonColor::White),
+            color: num::FromPrimitive::from_u32(mpidenticon.color as u32).unwrap_or(IdenticonColor::White),
         }
     }
 }
@@ -332,7 +314,7 @@ impl Site {
         match num::FromPrimitive::from_u32(self.resultType as u32) {
             Some(res) => res,
             None => {
-                println!("{}",self.resultType);
+                println!("{}", self.resultType);
                 println!("Could not get result type from loginType");
                 ResultTypeDefault
             }
@@ -347,13 +329,7 @@ impl PartialEq for Site {
 impl Eq for Site {}
 
 fn c_char_to_char(c: *const ::std::os::raw::c_char) -> char {
-    unsafe {
-        CStr::from_ptr(c)
-            .to_string_lossy()
-            .into_owned()
-            .pop()
-            .unwrap_or('*')
-    }
+    unsafe { CStr::from_ptr(c).to_string_lossy().into_owned().pop().unwrap_or('*') }
 }
 
 pub fn c_char_to_string(c: *const ::std::os::raw::c_char) -> String {
@@ -363,18 +339,12 @@ pub fn c_char_to_string(c: *const ::std::os::raw::c_char) -> String {
 pub type User = spectrebind::SpectreMarshalledUser;
 
 impl User {
-    pub fn create(
-        full_name: &str,
-        user_password: &str,
-        algorithm_version: AlgorithmVersion,
-    ) -> User {
+    pub fn create(full_name: &str, user_password: &str, algorithm_version: AlgorithmVersion) -> User {
         let mut u: User;
         unsafe {
             u = *spectrebind::spectre_marshal_user(
                 CString::new(full_name).unwrap().as_ptr(),
-                spectrebind::spectre_proxy_provider_set_secret(
-                    CString::new(user_password).unwrap().as_ptr(),
-                ),
+                spectrebind::spectre_proxy_provider_set_secret(CString::new(user_password).unwrap().as_ptr()),
                 algorithm_version.clone() as u32,
             );
         }
@@ -413,23 +383,11 @@ impl User {
         sites
     }
 
-    pub fn add_site(
-        &mut self,
-        site_name: &str,
-        result_type: ResultType,
-        site_counter: u32,
-        algorithm_version: AlgorithmVersion,
-    ) -> Site {
+    pub fn add_site(&mut self, site_name: &str, result_type: ResultType, site_counter: u32, algorithm_version: AlgorithmVersion) -> Site {
         let s: *mut Site;
         let site_name_ptr = CString::new(site_name).unwrap();
         unsafe {
-            s = spectrebind::spectre_marshal_site(
-                self,
-                site_name_ptr.as_ptr(),
-                result_type as u32,
-                site_counter,
-                algorithm_version as u32,
-            );
+            s = spectrebind::spectre_marshal_site(self, site_name_ptr.as_ptr(), result_type as u32, site_counter, algorithm_version as u32);
             (*s).set_used_now();
             *s
         }
@@ -444,26 +402,13 @@ impl User {
         }
         false
     }
-    
 }
 impl Default for User {
     fn default() -> User {
-        User::create("","",AlgorithmVersionDefault)
+        User::create("", "", AlgorithmVersionDefault)
     }
 }
-impl Debug for User {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("spectre::User")
-         .field("x", &self.userName)
-         .field("defaultType", &self.defaultType)
-         .field("keyID", &self.keyID.hex)
-         .field("algorithm", &self.algorithm)
-         .field("identicon", &self.identicon)
-         .field("defaultType", &self.defaultType)
-         .field("defaultType", &self.defaultType)
-         .finish()
-    }
-}
+
 #[repr(u32)]
 pub enum MarshalFormat {
     flat = spectrebind::SpectreFormatFlat,
@@ -477,11 +422,7 @@ fn marshal_write(out_format: MarshalFormat, mut user: User) -> Result<String, St
         message: &(0 as ::std::os::raw::c_char),
     };
     unsafe {
-        let mut marshalFile = spectrebind::spectre_marshal_file(
-            std::ptr::null_mut(),
-            std::ptr::null_mut(),
-            std::ptr::null_mut(),
-        );
+        let mut marshalFile = spectrebind::spectre_marshal_file(std::ptr::null_mut(), std::ptr::null_mut(), std::ptr::null_mut());
         let worked = spectrebind::spectre_marshal_write(f, &mut marshalFile, &mut user);
         // let mut outbuffer: *mut ::std::os::raw::c_char = 0 as *mut ::std::os::raw::c_char;
         if worked != std::ptr::null() {
@@ -496,17 +437,8 @@ pub enum FileMarshalReadError {
     Marshal(spectrebind::SpectreMarshalError),
 }
 
-fn marshal_read_from_string(
-    input_text: String,
-    input_format: MarshalFormat,
-    userSecret: String,
-) -> Result<*mut User, spectrebind::SpectreMarshalError> {
-    let mut marshalFile = unsafe {
-        spectrebind::spectre_marshal_read(
-            std::ptr::null_mut(),
-            CString::new(input_text.into_bytes()).unwrap().as_ptr(),
-        )
-    };
+fn marshal_read_from_string(input_text: String, input_format: MarshalFormat, userSecret: String) -> Result<*mut User, spectrebind::SpectreMarshalError> {
+    let mut marshalFile = unsafe { spectrebind::spectre_marshal_read(std::ptr::null_mut(), CString::new(input_text.into_bytes()).unwrap().as_ptr()) };
     let mut usr: *mut User;
     unsafe {
         if marshalFile.as_ref().unwrap().error.type_ != spectrebind::SpectreMarshalSuccess {
@@ -514,9 +446,7 @@ fn marshal_read_from_string(
         }
         usr = spectrebind::spectre_marshal_auth(
             marshalFile,
-            spectrebind::spectre_proxy_provider_set_secret(
-                CString::new(userSecret.into_bytes()).unwrap().as_ptr(),
-            ),
+            spectrebind::spectre_proxy_provider_set_secret(CString::new(userSecret.into_bytes()).unwrap().as_ptr()),
         );
         if usr.is_null() {
             return Err(marshalFile.as_ref().unwrap().error);
@@ -539,20 +469,13 @@ pub fn marshal_write_to_file(out_format: MarshalFormat, mut user: User) -> std::
     }
 }
 
-pub const SpectreMarshalSuccess: spectrebind::SpectreMarshalErrorType =
-    spectrebind::SpectreMarshalSuccess;
-pub const SpectreMarshalErrorStructure: spectrebind::SpectreMarshalErrorType =
-    spectrebind::SpectreMarshalErrorStructure;
-pub const SpectreMarshalErrorFormat: spectrebind::SpectreMarshalErrorType =
-    spectrebind::SpectreMarshalErrorFormat;
-pub const SpectreMarshalErrorMissing: spectrebind::SpectreMarshalErrorType =
-    spectrebind::SpectreMarshalErrorMissing;
-pub const SpectreMarshalErrorUserSecret: spectrebind::SpectreMarshalErrorType =
-    spectrebind::SpectreMarshalErrorUserSecret;
-pub const SpectreMarshalErrorIllegal: spectrebind::SpectreMarshalErrorType =
-    spectrebind::SpectreMarshalErrorIllegal;
-pub const SpectreMarshalErrorInternal: spectrebind::SpectreMarshalErrorType =
-    spectrebind::SpectreMarshalErrorInternal;
+pub const SpectreMarshalSuccess: spectrebind::SpectreMarshalErrorType = spectrebind::SpectreMarshalSuccess;
+pub const SpectreMarshalErrorStructure: spectrebind::SpectreMarshalErrorType = spectrebind::SpectreMarshalErrorStructure;
+pub const SpectreMarshalErrorFormat: spectrebind::SpectreMarshalErrorType = spectrebind::SpectreMarshalErrorFormat;
+pub const SpectreMarshalErrorMissing: spectrebind::SpectreMarshalErrorType = spectrebind::SpectreMarshalErrorMissing;
+pub const SpectreMarshalErrorUserSecret: spectrebind::SpectreMarshalErrorType = spectrebind::SpectreMarshalErrorUserSecret;
+pub const SpectreMarshalErrorIllegal: spectrebind::SpectreMarshalErrorType = spectrebind::SpectreMarshalErrorIllegal;
+pub const SpectreMarshalErrorInternal: spectrebind::SpectreMarshalErrorType = spectrebind::SpectreMarshalErrorInternal;
 
 #[allow(warnings)]
 mod spectrebind;

@@ -10,8 +10,8 @@ use std::ffi::{CStr, CString};
 use std::mem;
 use std::rc::Rc;
 extern crate libc;
-use gio::prelude::*;
 use gdk::gio;
+use gio::prelude::*;
 use glib::prelude::*;
 use glib::{object::Object, FromVariant, GString, ToVariant, Variant};
 
@@ -137,7 +137,7 @@ fn build_ui(application: &adw::Application, mut windows: Rc<RefCell<HashMap<Stri
                     ButtonsType::YesNo,
                     "There is no user with that name.\n Do you want to create a new User file?");
                 dialog.set_secondary_text(Some(&format!("A new file will be created:\nat: {}", path.to_str().unwrap())));
-                dialog.connect_response( 
+                dialog.connect_response(
                     glib::clone!(@strong user,@weak log_win,@weak name_entry,@weak spectre_entry,@weak application,@weak windows => move |dialog, response| {
                     println!("{}",response);
                     match response {

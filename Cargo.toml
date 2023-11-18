@@ -27,5 +27,6 @@ package = "libadwaita"
 libadwaita = "0.1.1"
 
 [build-dependencies]
-bindgen = "0.57"
+bindgen = "0.68.1"
 cc = "1.0.67"
+current_platform = "0.2.0"
