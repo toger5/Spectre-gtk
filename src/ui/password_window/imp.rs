@@ -21,24 +21,27 @@ impl ObjectSubclass for PasswordWindow {
     fn new() -> Self {
         Self {
             filter_store: {
-                let custom_sorter = gtk::CustomSorter::new(|a,b| {
+                let custom_sorter = gtk::CustomSorter::new(|a, b| {
                     let a_site = a.clone().downcast::<GSite>().ok().unwrap();
                     let b_site = b.clone().downcast::<GSite>().ok().unwrap();
-                    if a_site.is_search() {return gtk::Ordering::Smaller;}
-                    if b_site.is_search() {return gtk::Ordering::Larger;}
+                    if a_site.is_search() {
+                        return gtk::Ordering::Smaller;
+                    }
+                    if b_site.is_search() {
+                        return gtk::Ordering::Larger;
+                    }
                     match a_site.site().unwrap().last_used() > b_site.site().unwrap().last_used() {
                         true => gtk::Ordering::Smaller,
-                        false => gtk::Ordering::Larger
+                        false => gtk::Ordering::Larger,
                     }
                 });
-                use gtk::gio;
                 use crate::model::g_site::GSite;
+                use gtk::gio;
                 let custom_filter = gtk::CustomFilter::new(|_| true);
-                
+
                 let site_store = gio::ListStore::new(GSite::static_type());
                 let sort_site_store = gtk::SortListModel::new(Some(&site_store), Some(&custom_sorter));
                 gtk::FilterListModel::new(Some(&sort_site_store), Some(&custom_filter))
-            
             },
             list_view: gtk::ListView::new(Option::<&gtk::NoSelection>::None, Option::<&gtk::SignalListItemFactory>::None),
             entry_site: GSite::new_search(),

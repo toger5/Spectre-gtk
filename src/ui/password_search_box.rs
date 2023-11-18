@@ -98,7 +98,7 @@ mod imp {
                     button.set_group(Some(&b));
                 }
                 hbox_linked.append(&button);
-                if spectre::AlgorithmVersion::from_i32(i).unwrap() == spectre::AlgorithmVersionDefault {
+                if spectre::AlgorithmVersion::from_i32(i).unwrap() == spectre::ALGORITHM_VERSION_DEFAULT {
                     button.set_active(true);
                 }
                 button.connect_active_notify(glib::clone!(@weak obj => move |button| {
@@ -114,7 +114,7 @@ mod imp {
             }
             hbox_bottom_left_bottom.append(&hbox_linked);
             let type_combo_box = gtk::ComboBoxText::new();
-            for res_type in spectre::ResultType::iterable(){
+            for res_type in spectre::ResultType::iterable() {
                 type_combo_box.append(Some(&res_type.to_string()), &res_type.to_string());
             }
             let a_id = spectre::ResultTypeDefault.to_string();
@@ -187,7 +187,7 @@ impl PasswordSearchBox {
     }
 
     pub fn setup_user(&self, usr: Rc<RefCell<Option<spectre::User>>>, usr_key: Rc<RefCell<Option<spectre::UserKey>>>) {
-        let mut self_ = imp::PasswordSearchBox::from_instance(&self).clone();
+        let mut self_ = imp::PasswordSearchBox::from_instance(&self);
         self_.user.replace(*usr.borrow());
         self_.user_key.replace(*usr_key.borrow());
         // *self_.user.borrow_mut() = *usr.borrow();
@@ -284,7 +284,7 @@ impl PasswordSearchBox {
         let new_site_name = site.descriptor_name();
         //update combo box
         let type_combo_box = self_.type_combo_box.borrow().as_ref().unwrap().clone();
-        let result_type = site.descriptor().resultType;
+        let result_type = site.descriptor().result_type;
         let a_id = result_type.to_string();
         // println!("{}", a_id);
         type_combo_box.set_active_id(Some(&a_id));
@@ -300,7 +300,7 @@ impl PasswordSearchBox {
         let self_ = imp::PasswordSearchBox::from_instance(&self);
         let self_clone = self.clone();
         let password_label = self_.password_label.borrow().as_ref().unwrap().clone();
-        
+
         // Get Password for label
         // TODO remove hardcoded password_type
         // let password_type: spectre::ResultType = spectre::ResultType::TemplateLong;
@@ -324,7 +324,5 @@ impl PasswordSearchBox {
         // } else {
         //     String::from("")
         // };
-
-        
     }
 }

@@ -145,7 +145,7 @@ fn build_ui(application: &adw::Application, mut windows: Rc<RefCell<HashMap<Stri
                             *user.borrow_mut() = Some(spectre::User::create(
                             name_entry.text().as_str(),
                             spectre_entry.text().as_str(),
-                            spectre::AlgorithmVersionDefault,
+                            spectre::ALGORITHM_VERSION_DEFAULT,
                             ));
                             dialog.emit_close();
                             let p = path.clone();
@@ -186,7 +186,7 @@ fn build_ui(application: &adw::Application, mut windows: Rc<RefCell<HashMap<Stri
             let user_key = Some(spectre::user_key(
                 name_entry.text().as_str(),
                 spectre_entry.text().as_str(),
-                spectre::AlgorithmVersionDefault,
+                spectre::ALGORITHM_VERSION_DEFAULT,
             ));
             let pwd_window = ui::password_window::PasswordWindow::new(user.clone(), Rc::new(RefCell::new(user_key)));
             pwd_window.fill_site_list();

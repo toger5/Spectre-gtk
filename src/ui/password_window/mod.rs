@@ -2,7 +2,7 @@ use std::cell::{RefCell, RefMut};
 use std::rc::Rc;
 
 use super::password_search_box::CopyButtonMode;
-use crate::model::g_site::{GSite,SiteDescriptor};
+use crate::model::g_site::{GSite, SiteDescriptor};
 use crate::spectre;
 use crate::ui::{password_list_box::PasswordListBox, password_search_box::PasswordSearchBox};
 use gtk::glib;
@@ -96,7 +96,7 @@ impl PasswordWindow {
 
     pub fn parse_list_item(item: &gtk::ListItem) -> (GSite, PasswordSearchBox, PasswordListBox, gtk::Stack) {
         let stack = item.child().unwrap().downcast::<gtk::Stack>().ok().unwrap();
-        (   
+        (
             item.item().unwrap().downcast::<GSite>().ok().unwrap(),
             stack.child_by_name("search").unwrap().downcast::<PasswordSearchBox>().ok().unwrap(),
             stack.child_by_name("pwd").unwrap().downcast::<PasswordListBox>().ok().unwrap(),
@@ -126,16 +126,26 @@ impl PasswordWindow {
     fn get_store(&self) -> gtk::gio::ListStore {
         let self_ = &imp::PasswordWindow::from_instance(self);
         let store = &self_.filter_store;
-        store.model().unwrap().downcast::<gtk::SortListModel>().unwrap().model().unwrap().downcast::<gtk::gio::ListStore>().unwrap()
+        store
+            .model()
+            .unwrap()
+            .downcast::<gtk::SortListModel>()
+            .unwrap()
+            .model()
+            .unwrap()
+            .downcast::<gtk::gio::ListStore>()
+            .unwrap()
     }
 
     pub fn filter_site_list(&self, filter_str: &str) {
-        let self_ = &imp::PasswordWindow::from_instance(self);
+        let self_ = imp::PasswordWindow::from_instance(&self);
         let filter = self_.filter_store.filter().unwrap().downcast::<gtk::CustomFilter>().ok().unwrap();
-        let f_str = String::from(filter_str.clone());
+        let f_str = String::from(filter_str);
         filter.set_filter_func(move |obj| {
             let g_site = obj.downcast_ref::<GSite>().unwrap();
-            if g_site.is_search() {return true}
+            if g_site.is_search() {
+                return true;
+            }
             let s = g_site.site().unwrap().get_name();
             s.contains(&f_str)
         });
@@ -144,9 +154,9 @@ impl PasswordWindow {
         let self_ = &imp::PasswordWindow::from_instance(self);
         let usr = self_.user.clone();
         let key = self_.user_key.clone();
-        
+
         let site_des = site.descriptor();
-        if usr.borrow().as_ref().unwrap().has_site(&site_des.siteName.borrow()) {
+        if usr.borrow().as_ref().unwrap().has_site(&site_des.site_name.borrow()) {
             let pwd = site.get_password(*key.borrow().as_ref().unwrap());
             helper::copy_to_clipboard_with_notification(&self_.list_view, &pwd);
             self.hide();
@@ -155,12 +165,12 @@ impl PasswordWindow {
             let self_clone = self.clone();
             let site_clone = site.clone();
             let window = self_.list_view.root().unwrap().downcast::<gtk::Window>().ok().unwrap();
-            PasswordWindow::show_accept_new_site_dialog(&window, &site_des.clone().siteName.borrow(), move || {
+            PasswordWindow::show_accept_new_site_dialog(&window, &site_des.clone().site_name.borrow(), move || {
                 site_clone.set_site(&user_clone.borrow_mut().as_mut().unwrap().add_site(
-                    &site_des.siteName.borrow(),
-                    site_des.resultType,
+                    &site_des.site_name.borrow(),
+                    site_des.result_type,
                     1,
-                    site_des.algorithmVersion,
+                    site_des.algorithm_version,
                 ));
                 match spectre::marshal_write_to_file(spectre::MarshalFormat::flat, *usr.borrow().as_ref().unwrap()) {
                     Ok(a) => println!("succsesfully wrote to file"),

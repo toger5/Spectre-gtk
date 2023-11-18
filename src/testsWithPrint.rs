@@ -19,26 +19,26 @@ use std::time::SystemTime;
 #[test]
 fn format_converter() {
     //test format converter
-    println!("Format for 2: {}",);
-    assert_eq!(mpw::name_for_format(2), "JSON".to_owned());
+    // println!("Format for 2: {}",);
+    assert_eq!(spectre::name_for_format(2), "JSON".to_owned());
 }
 
 fn test() {
     //test MASTER KEY
-    // const version: mpw::AlgorithmVersion = mpw::AlgorithmVersion::V3;
-    let m_key: mpw::MasterKey = mpw::master_key("aa", "aa", mpw::AlgorithmVersionDefault);
+    // const version: spectre::AlgorithmVersion = spectre::AlgorithmVersion::V3;
+    let m_key: spectre::MasterKey = spectre::master_key("aa", "aa", spectre::ALGORITHM_VERSION_DEFAULT);
     println!("key: {:#?}", m_key);
     //test PASSWORD
-    let pwd = mpw::site_result("matrix", m_key, mpw::ResultType::TemplateLong, mpw::AlgorithmVersion::V3);
+    let pwd = spectre::site_result("matrix", m_key, spectre::ResultType::TemplateLong, spectre::AlgorithmVersion::V3);
 
     //test Marshal
-    let mut user = mpw::User::create("name", "abc", mpw::AlgorithmVersionDefault);
+    let mut user = spectre::User::create("name", "abc", spectre::ALGORITHM_VERSION_DEFAULT);
     println!("A");
-    user.add_site("abc", mpw::ResultType::TemplateLong, 0, mpw::AlgorithmVersionDefault);
-    user.add_site("der shit", mpw::ResultType::TemplateLong, 0, mpw::AlgorithmVersionDefault);
-    user.add_site("altabox", mpw::ResultType::TemplateLong, 0, mpw::AlgorithmVersionDefault);
-    user.add_site("mpwstgug", mpw::ResultType::TemplateLong, 0, mpw::AlgorithmVersionDefault);
-    user.add_site("sething.org", mpw::ResultType::TemplateLong, 0, mpw::AlgorithmVersionDefault);
+    user.add_site("abc", spectre::ResultType::TemplateLong, 0, spectre::ALGORITHM_VERSION_DEFAULT);
+    user.add_site("der shit", spectre::ResultType::TemplateLong, 0, spectre::ALGORITHM_VERSION_DEFAULT);
+    user.add_site("altabox", spectre::ResultType::TemplateLong, 0, spectre::ALGORITHM_VERSION_DEFAULT);
+    user.add_site("spectrestgug", spectre::ResultType::TemplateLong, 0, spectre::ALGORITHM_VERSION_DEFAULT);
+    user.add_site("sething.org", spectre::ResultType::TemplateLong, 0, spectre::ALGORITHM_VERSION_DEFAULT);
     // for s in user.get_sites().iter_mut() {
     //     (*s).lastUsed = SystemTime::now()
     //         .duration_since(SystemTime::UNIX_EPOCH)
@@ -51,18 +51,18 @@ fn test() {
     // }
 
     println!("A");
-    mpw::site_result("abc", m_key, mpw::ResultType::TemplateLong, mpw::AlgorithmVersionDefault);
+    spectre::site_result("abc", m_key, spectre::ResultType::TemplateLong, spectre::ALGORITHM_VERSION_DEFAULT);
     println!("C");
     // println!(
     //     "some marshal file: \n {}",
-    //     mpw::marshal_write(mpw::MarshalFormat::flat, user).expect("marshal_write")
+    //     spectre::marshal_write(spectre::MarshalFormat::flat, user).expect("marshal_write")
     // );
-    match mpw::marshal_write_to_file("TESTmpsites.txt", mpw::MarshalFormat::flat, user) {
+    match spectre::marshal_write_to_file("TESTmpsites.txt", spectre::MarshalFormat::flat, user) {
         Ok(a) => println!("succsesfully wrote to file"),
         Err(r) => println!("err {}", r),
     }
     println!("B");
-    match mpw::marshal_read_from_file("TESTmpsites.txt", mpw::MarshalFormat::flat, "abc".to_string()) {
+    match spectre::marshal_read_from_file("TESTmpsites.txt", spectre::MarshalFormat::flat, "abc".to_string()) {
         Ok(usr) => {
             unsafe {
                 println!("user site 1) {}", CStr::from_ptr(usr.fullName).to_string_lossy().into_owned());

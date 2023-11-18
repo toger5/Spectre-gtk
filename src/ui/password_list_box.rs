@@ -173,8 +173,8 @@ impl PasswordListBox {
         let self_ = imp::PasswordListBox::from_instance(&self);
         self_.site_label.borrow().as_ref().unwrap().set_text(&site.name());
         let s_pwd = site.get_password(*self_.user_key.borrow().as_ref().unwrap());
-        let s_version = site.descriptor().algorithmVersion;
-        let s_type = site.descriptor().resultType;
+        let s_version = site.descriptor().algorithm_version;
+        let s_type = site.descriptor().result_type;
         self_.password_label.borrow().as_ref().unwrap().set_text(&s_pwd);
         self_.password_type_button.borrow().as_ref().unwrap().set_label(&s_type.to_string());
         self_.password_version_button.borrow().as_ref().unwrap().set_label(&s_version.to_string());

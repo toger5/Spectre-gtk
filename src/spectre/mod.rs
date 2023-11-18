@@ -11,7 +11,7 @@ pub type UserKey = spectrebind::SpectreUserKey;
 
 impl Default for UserKey {
     fn default() -> UserKey {
-        user_key("", "", AlgorithmVersionDefault)
+        user_key("", "", ALGORITHM_VERSION_DEFAULT)
     }
 }
 #[repr(u32)]
@@ -26,8 +26,8 @@ pub enum AlgorithmVersion {
     /** V3 is the current version. */
     V3 = spectrebind::SpectreAlgorithmV3,
 }
-pub const AlgorithmVersionDefault: AlgorithmVersion = AlgorithmVersion::V3;
-pub const AlgorithmVersionLatest: AlgorithmVersion = AlgorithmVersion::V3;
+pub const ALGORITHM_VERSION_DEFAULT: AlgorithmVersion = AlgorithmVersion::V3;
+pub const ALGORITHM_VERSION_LATEST: AlgorithmVersion = AlgorithmVersion::V3;
 impl std::string::ToString for AlgorithmVersion {
     fn to_string(&self) -> String {
         match self {
@@ -405,7 +405,7 @@ impl User {
 }
 impl Default for User {
     fn default() -> User {
-        User::create("", "", AlgorithmVersionDefault)
+        User::create("", "", ALGORITHM_VERSION_DEFAULT)
     }
 }
 
