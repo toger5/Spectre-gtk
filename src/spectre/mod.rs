@@ -284,13 +284,13 @@ impl Site {
         c_char_to_string(self.siteName)
     }
     pub fn set_name(&mut self, name: &str) {
-        self.siteName = name.as_ptr() as *const i8;
+        self.siteName = name.as_ptr() as *const u8;
     }
     pub fn get_url(&self) -> String {
         c_char_to_string(self.url)
     }
     pub fn set_url(&mut self, url: &str) {
-        self.url = url.as_ptr() as *const i8;
+        self.url = url.as_ptr() as *const u8;
     }
     pub fn increase_uses(&mut self) {
         self.uses += 1;

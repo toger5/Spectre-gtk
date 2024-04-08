@@ -1,11 +1,11 @@
 {
     "app-id" : "com.github.spectre",
     "runtime" : "org.gnome.Platform",
-    "runtime-version" : "42",
+    "runtime-version" : "46",
     "sdk" : "org.gnome.Sdk",
     "sdk-extensions" : [
         "org.freedesktop.Sdk.Extension.rust-stable",
-        "org.freedesktop.Sdk.Extension.llvm12"
+        "org.freedesktop.Sdk.Extension.llvm16"
     ],
     "command" : "spectre-gtk",
     "finish-args" : [
@@ -17,14 +17,19 @@
         "--filesystem=home"
     ],
     "build-options" : {
-        "append-path": "/usr/lib/sdk/llvm12/bin:/usr/lib/sdk/rust-stable/bin",
+        "append-path": "/usr/lib/sdk/llvm16/bin:/usr/lib/sdk/rust-stable/bin",
         "prepend-ld-library-path": "/usr/lib/sdk/llvm12/lib",
         "build-args" : [
             "--share=network"
         ],
         "env" : {
             "CARGO_HOME" : "/run/build/spectre-gtk/cargo",
-            "RUST_BACKTRACE" : "1"
+            "RUST_BACKTRACE" : "1",
+
+            "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER": "clang",
+            "CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS": "-C link-arg=-fuse-ld=/usr/lib/sdk/rust-stable/bin/mold",
+            "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER": "clang",
+            "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUSTFLAGS": "-C link-arg=-fuse-ld=/usr/lib/sdk/rust-stable/bin/mold"
         }
     },
     "modules" : [

@@ -37,6 +37,9 @@ fn main() {
     if current_platform::CURRENT_PLATFORM == platform::MACOS {
         println!("cargo:rustc-link-search=/opt/homebrew/lib");
         println!("cargo:rustc-link-lib=sodium");
+    }else{
+        println!("cargo:rustc-link-search=native={}", "/app/lib/");
+        println!("cargo:rustc-link-lib=sodium");
     }
     // cargo:rustc-link-lib=[KIND=]NAME
 
