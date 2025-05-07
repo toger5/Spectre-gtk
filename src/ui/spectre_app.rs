@@ -23,11 +23,11 @@ mod imp {
 
     impl ObjectImpl for SpectreApp {}
     impl ApplicationImpl for SpectreApp {
-        fn activate(&self, application: &Self::Type) {
+        fn activate(&self) {
             // *self.username.borrow_mut() = String::from("Firstname Lastname");
-            
+
             // We create our window at activation stage
-            let window = gtk::ApplicationWindow::new(application);
+            let window = gtk::ApplicationWindow::new(self.obj().as_ref());
             window.set_default_size(600, 350);
             window.set_title(Some("Spectre"));
 
@@ -46,19 +46,18 @@ glib::wrapper! {
 
 impl SpectreApp {
     pub fn new() -> Self {
-        glib::Object::new(&[
-            ("application-id", &"org.gtk_rs.application-subclass"),
-            ("flags", &gio::ApplicationFlags::empty()),
-        ])
-        .expect("Failed to create SpectreApp")
+        glib::Object::builder()
+            .property("application-id", "org.gtk_rs.application-subclass")
+            .property("flags", gio::ApplicationFlags::empty())
+            .build()
     }
-    pub fn with_username(username: &str) -> Self{
+    pub fn with_username(username: &str) -> Self {
         let app = SpectreApp::new();
         let app_ = imp::SpectreApp::from_instance(&app);
         *app_.username.borrow_mut() = username.to_owned();
         app
     }
-    pub fn update_username(&self, name: &str){
+    pub fn update_username(&self, name: &str) {
         let self_ = imp::SpectreApp::from_instance(self);
         *self_.username.borrow_mut() = name.to_owned();
     }

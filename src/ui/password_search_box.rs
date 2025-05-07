@@ -45,9 +45,10 @@ mod imp {
         }
     }
     impl ObjectImpl for PasswordSearchBox {
-        fn constructed(&self, obj: &Self::Type) {
+        fn constructed(&self) {
             use gtk::*;
-            self.parent_constructed(obj);
+            self.parent_constructed();
+            let obj = self.obj();
             obj.set_css_classes(&["view", "top", "bottom"]);
             obj.set_halign(Align::Center);
             obj.set_size_request(490, -1);
@@ -57,7 +58,7 @@ mod imp {
             obj.set_margin_bottom(50);
             obj.set_margin_top(50);
 
-            let password_label = gtk::builders::LabelBuilder::new()
+            let password_label = gtk::Label::builder()
                 .hexpand_set(true)
                 .halign(Align::Fill)
                 .label("Password")
@@ -72,7 +73,7 @@ mod imp {
             let hbox_bottom = gtk::Box::new(gtk::Orientation::Horizontal, 30);
             obj.append(&hbox_bottom);
 
-            let site_entry = gtk::builders::EntryBuilder::new()
+            let site_entry = gtk::Entry::builder()
                 .halign(Align::Fill)
                 .valign(Align::Fill)
                 .css_classes(vec![String::from("site-name-entry")])
@@ -126,7 +127,7 @@ mod imp {
             password_show_button.add_css_class("tiny");
             password_show_button.set_has_frame(false);
             hbox_bottom_left_bottom.append(&password_show_button);
-            let create_copy_button = gtk::builders::ButtonBuilder::new()
+            let create_copy_button = gtk::Button::builder()
                 .valign(gtk::Align::End)
                 .vexpand(true)
                 .valign(Align::Fill)
@@ -146,7 +147,7 @@ mod imp {
             *self.type_combo_box.borrow_mut() = Some(type_combo_box);
         }
 
-        fn dispose(&self, _obj: &Self::Type) {
+        fn dispose(&self) {
             // Child widgets need to be manually unparented in `dispose()`.
             if let Some(child) = self.hbox_bottom.borrow_mut().take() {
                 child.unparent();
@@ -158,8 +159,8 @@ mod imp {
         fn signals() -> &'static [Signal] {
             static SIGNALS: Lazy<Vec<Signal>> = Lazy::new(|| {
                 vec![
-                    Signal::builder("search-changed", &[GSite::static_type().into()], <()>::static_type().into()).build(),
-                    Signal::builder("copy-create-activated", &[GSite::static_type().into()], <()>::static_type().into()).build(),
+                    Signal::builder("search-changed").param_types([GSite::static_type()]).build(),
+                    Signal::builder("copy-create-activated").param_types([GSite::static_type()]).build(),
                     // Signal::builder("version-changed", &[GSite::static_type().into()], <()>::static_type().into()).build(),
                     // Signal::builder("type-changed", &[GSite::static_type().into()], <()>::static_type().into()).build(),
                 ]
@@ -183,7 +184,7 @@ pub enum CopyButtonMode {
 }
 impl PasswordSearchBox {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create PasswordSearchBox")
+        glib::Object::builder().build()
     }
 
     pub fn setup_user(&self, usr: Rc<RefCell<Option<spectre::User>>>, usr_key: Rc<RefCell<Option<spectre::UserKey>>>) {

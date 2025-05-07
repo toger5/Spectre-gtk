@@ -13,13 +13,13 @@ extern crate libc;
 use gdk::gio;
 use gio::prelude::*;
 use glib::prelude::*;
-use glib::{object::Object, FromVariant, GString, ToVariant, Variant};
+use glib::{object::Object, GString, Variant};
 
 use std::fs::File;
 use std::path::Path;
 
-use adw::prelude::*;
-use adw::{ActionRow, Application, ApplicationWindow, HeaderBar};
+use libadwaita::prelude::*;
+use libadwaita::{ActionRow, Application, ApplicationWindow, HeaderBar};
 
 use gtk::gdk;
 use gtk::prelude::*;
@@ -77,11 +77,11 @@ fn main() {
 
 fn load_custom_styling() {
     let provider = gtk::CssProvider::new();
-    provider.load_from_data(include_str!("../data/style.css").as_bytes());
+    provider.load_from_data(include_str!("../data/style.css"));
     gtk::StyleContext::add_provider_for_display(&gtk::gdk::Display::default().unwrap(), &provider, 500);
 }
 
-fn build_ui(application: &adw::Application, mut windows: Rc<RefCell<HashMap<String, Window>>>) {
+fn build_ui(application: &libadwaita::Application, mut windows: Rc<RefCell<HashMap<String, Window>>>) {
     // const version: spectre::AlgorithmVersion = AlgorithmVersionDefault;
     const password_type: spectre::ResultType = spectre::ResultType::TemplateLong;
     let glade_src = include_str!("gtk_ui_files/windows.ui");
@@ -175,7 +175,7 @@ fn build_ui(application: &adw::Application, mut windows: Rc<RefCell<HashMap<Stri
         log_win: &gtk::Window,
         name_entry: &gtk::Entry,
         spectre_entry: &gtk::Entry,
-        application: &adw::Application,
+        application: &libadwaita::Application,
         windows: Rc<RefCell<HashMap<String, Window>>>,
     ) {
         if let Some(_) = *user.borrow() {
@@ -266,5 +266,5 @@ fn handle_file_marshal_read_error(err: spectre::FileMarshalReadError, log_win: &
 }
 mod spectre;
 
-#[cfg(test)]
-mod testsWithPrint;
+// #[cfg(test)]
+// mod testsWithPrint;

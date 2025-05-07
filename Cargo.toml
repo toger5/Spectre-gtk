@@ -17,14 +17,13 @@ num-derive = "0.2"
 pango = "0.9.1"
 libc = "0.2.91"
 
+libadwaita = "0.7.2"
+
 [dependencies.gtk]
 package = "gtk4"
-version = "0.4.6"
-features = ["v4_2"]
+version = "0.9.4"
+features = ["v4_16"]
 
-[dependencies.adw]
-package = "libadwaita"
-libadwaita = "0.1.1"
 
 [build-dependencies]
 bindgen = "0.68.1"

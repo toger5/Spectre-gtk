@@ -39,11 +39,12 @@ impl ObjectSubclass for PasswordWindow {
                 use gtk::gio;
                 let custom_filter = gtk::CustomFilter::new(|_| true);
 
-                let site_store = gio::ListStore::new(GSite::static_type());
-                let sort_site_store = gtk::SortListModel::new(Some(&site_store), Some(&custom_sorter));
-                gtk::FilterListModel::new(Some(&sort_site_store), Some(&custom_filter))
+                let site_store = gio::ListStore::builder().item_type(GSite::static_type()).build();
+
+                let sort_site_store = gtk::SortListModel::new(Some(site_store), Some(custom_sorter));
+                gtk::FilterListModel::new(Some(sort_site_store), Some(custom_filter))
             },
-            list_view: gtk::ListView::new(Option::<&gtk::NoSelection>::None, Option::<&gtk::SignalListItemFactory>::None),
+            list_view: gtk::ListView::new(Option::<gtk::NoSelection>::None, Option::<gtk::SignalListItemFactory>::None),
             entry_site: GSite::new_search(),
             user: Rc::new(RefCell::new(None)),
             user_key: Rc::new(RefCell::new(None)),
@@ -52,21 +53,22 @@ impl ObjectSubclass for PasswordWindow {
     }
 }
 impl ObjectImpl for PasswordWindow {
-    fn constructed(&self, obj: &Self::Type) {
-        self.parent_constructed(obj);
-        obj.set_default_size(550, 800);
+    fn constructed(&self) {
+        self.parent_constructed();
+        self.obj().set_default_size(550, 800);
 
         let sw = gtk::ScrolledWindow::new();
         sw.set_child(Some(&self.list_view));
+        sw.set_kinetic_scrolling(true);
         sw.set_min_content_height(300);
         sw.set_min_content_width(500);
         sw.set_propagate_natural_width(true);
         sw.set_propagate_natural_height(true);
         let b = gtk::Box::new(gtk::Orientation::Vertical, 10);
         b.append(&sw);
-        obj.set_child(Some(&b));
+        self.obj().set_child(Some(&b));
     }
-    fn dispose(&self, obj: &Self::Type) {
+    fn dispose(&self) {
         //TODO unparent childs
     }
 }
@@ -77,11 +79,11 @@ impl WidgetImpl for PasswordWindow {
     // }
 }
 impl WindowImpl for PasswordWindow {
-    fn close_request(&self, window: &Self::Type) -> glib::signal::Inhibit {
+    fn close_request(&self) -> glib::Propagation {
         println!("close-but-no-logout");
-        // let app = self.get_child().unwrap().root().unwrap().downcast::<gtk::Window>().ok().unwrap().application().unwrap();
-        // self.parent_close_request(window);
-        // app.quit();
-        glib::signal::Inhibit(false)
+        //     // let app = self.get_child().unwrap().root().unwrap().downcast::<gtk::Window>().ok().unwrap().application().unwrap();
+        //     // self.parent_close_request(window);
+        //     // app.quit();
+        glib::Propagation::Proceed
     }
 }

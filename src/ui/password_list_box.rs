@@ -55,8 +55,9 @@ mod imp {
     }
     // impl
     impl ObjectImpl for PasswordListBox {
-        fn constructed(&self, obj: &Self::Type) {
-            self.parent_constructed(obj);
+        fn constructed(&self) {
+            let obj = self.obj();
+            self.parent_constructed();
             obj.set_css_classes(&["view", "top", "bottom"]);
             obj.set_halign(gtk::Align::Center);
             obj.set_size_request(450, -1);
@@ -139,7 +140,7 @@ mod imp {
             *self.password_show_button.borrow_mut() = Some(password_show_button);
         }
 
-        fn dispose(&self, _obj: &Self::Type) {
+        fn dispose(&self) {
             // Child widgets need to be manually unparented in `dispose()`.
             if let Some(child) = self.hbox_bottom.borrow_mut().take() {
                 child.unparent();
@@ -160,7 +161,7 @@ glib::wrapper! {
 
 impl PasswordListBox {
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create PasswordListBox")
+        glib::Object::builder().build()
     }
 
     pub fn setup_user(&self, usr: Rc<RefCell<Option<spectre::User>>>, usr_key: Rc<RefCell<Option<spectre::UserKey>>>) {

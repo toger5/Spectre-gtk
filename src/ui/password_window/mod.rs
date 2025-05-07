@@ -5,9 +5,9 @@ use super::password_search_box::CopyButtonMode;
 use crate::model::g_site::{GSite, SiteDescriptor};
 use crate::spectre;
 use crate::ui::{password_list_box::PasswordListBox, password_search_box::PasswordSearchBox};
-use gtk::glib;
 use gtk::prelude::*;
 use gtk::subclass::prelude::*;
+use gtk::{glib, ListItem};
 mod imp;
 
 glib::wrapper! {
@@ -31,7 +31,7 @@ pub mod helper {
 
 impl PasswordWindow {
     pub fn new(user: Rc<RefCell<Option<spectre::User>>>, user_key: Rc<RefCell<Option<spectre::UserKey>>>) -> Self {
-        let self_: PasswordWindow = glib::Object::new(&[]).expect("Failed to create PasswordWindow");
+        let self_: PasswordWindow = glib::Object::builder().build();
         let self_priv_ = &imp::PasswordWindow::from_instance(&self_);
         *self_priv_.user.borrow_mut() = *user.borrow();
         *self_priv_.user_key.borrow_mut() = *user_key.borrow();
@@ -42,7 +42,7 @@ impl PasswordWindow {
     pub fn setup(&self) {
         let self_ = &imp::PasswordWindow::from_instance(self);
 
-        let model = gtk::NoSelection::new(Some(&self_.filter_store));
+        let model = gtk::NoSelection::new(Some(self_.filter_store.clone()));
 
         let factory = gtk::SignalListItemFactory::new();
         self_.list_view.set_factory(Some(&factory));
@@ -50,7 +50,8 @@ impl PasswordWindow {
 
         let (user, user_key) = (self_.user.clone(), self_.user_key.clone());
         factory.connect_setup(glib::clone! {@weak self as self_clone @weak user, @weak user_key=>move |fact, item| {
-            let stack = gtk::builders::StackBuilder::new().vhomogeneous(false).build();
+            let stack = gtk::Stack::builder().vhomogeneous(false).build();
+
             let pwd_box = PasswordListBox::new();
             pwd_box.setup_user(user.clone(), user_key.clone());
             stack.add_named(&pwd_box, Some("pwd"));
@@ -58,10 +59,11 @@ impl PasswordWindow {
             let search_box = PasswordSearchBox::new();
             search_box.setup_user(user.clone(), user_key.clone());
             stack.add_named(&search_box, Some("search"));
-            item.set_child(Some(&stack));
+
+            item.dynamic_cast_ref::<gtk::ListItem>().unwrap().set_child(Some(&stack));
         }});
         factory.connect_bind(glib::clone!(@weak self as self_clone => move |fact, item| {
-            let (prop, search_box, list_box, stack) = PasswordWindow::parse_list_item(item);
+            let (prop, search_box, list_box, stack) = PasswordWindow::parse_list_item(item.dynamic_cast_ref::<gtk::ListItem>().unwrap());
             let visible_child = if (prop.is_search()) {
                 let d = prop.descriptor();
                 println!("d: {:?}",d);

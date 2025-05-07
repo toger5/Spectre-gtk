@@ -81,7 +81,7 @@ mod imp {
             PROPERTIES.as_ref()
         }
 
-        fn set_property(&self, _obj: &Self::Type, _id: usize, value: &glib::Value, p_spec: &glib::ParamSpec) {
+        fn set_property(&self, _id: usize, value: &glib::Value, p_spec: &glib::ParamSpec) {
             match p_spec.name() {
                 "site-name" => {
                     // let user_id = value.get().unwrap();
@@ -92,7 +92,7 @@ mod imp {
             }
         }
 
-        fn property(&self, obj: &Self::Type, _id: usize, p_spec: &glib::ParamSpec) -> glib::Value {
+        fn property(&self, _id: usize, p_spec: &glib::ParamSpec) -> glib::Value {
             match p_spec.name() {
                 // "display-name" => obj.display_name().to_value(),
                 // "user-id" => self.user_id.get().to_value(),
@@ -142,7 +142,7 @@ impl GSite {
         *self_.site.borrow()
     }
     pub fn new() -> Self {
-        glib::Object::new(&[]).expect("Failed to create GSite")
+        glib::Object::new::<Self>()
     }
     pub fn new_with_site(site: &spectre::Site) -> Self {
         let s = GSite::new();
