@@ -23,7 +23,6 @@
                 </attributes>
                 <property name="width-request">250</property>
                 <property name="height-request">100</property>
-                <property name="has-focus">1</property>
               </object>
             </child>
             <child>
