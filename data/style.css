@@ -1,46 +1,47 @@
-box.view {
-	border-radius:0px;
-	padding: 10px;
-	margin: 8px;
+listview {
+  background-color: transparent;
+}
+listview row:hover {
+  background-color: inherit;
+}
+box.item {
+  padding: 12px;
+  margin: 8px;
+  border-radius: 12px;
+  box-shadow: 0 0 8px rgb(220, 220, 220);
+  border: 1px solid rgb(220, 220, 220);
+  background-color: white;
 }
 
-box.bottom {
-	border-bottom-left-radius:10px;
-	border-bottom-right-radius:10px;
-}
-box.top {
-	border-top-left-radius:10px;
-	border-top-right-radius:10px;
-}
 button.tiny {
-	font-size: 13px;
-	min-height:0px;
-	color: grey;
-	padding-top:0px;
-	padding-left:10px;
-	padding-right:10px;
-	padding-bottom:0px;
+  font-size: 13px;
+  min-height: 0px;
+  color: grey;
+  padding-top: 0px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 0px;
 }
-button.tiny:checked{
-	color: white;
+button.tiny:checked {
+  color: white;
 }
-.monospace{
-	font-family: "source code pro";
-	color: rgb(200,200,200);
+.monospace {
+  font-family: "source code pro";
+  color: rgb(200, 200, 200);
 }
-.site-name-label{
-	font-size: 25px;
-	font-weight: 300;
+.site-name-label {
+  font-size: 25px;
+  font-weight: 300;
 }
-.site-name-entry{
-	font-size: 25px;
+.site-name-entry {
+  font-size: 25px;
 }
-.pwd-preview{
-	font-size: 35px;
-	margin-bottom: 15px;
+.pwd-preview {
+  font-size: 35px;
+  margin-bottom: 15px;
 }
-button.create-action{
-	background-color:#2EC27E;
-	background-image: none;
-	color: white;
+button.create-action {
+  background-color: #2ec27e;
+  background-image: none;
+  color: white;
 }

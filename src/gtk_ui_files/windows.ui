@@ -1,109 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk" version="4.0"/>
-  <object class="GtkWindow" id="login_window">
+  <requires lib="gtk" version="4.0" />
+  <object class="AdwWindow" id="login_window">
     <property name="title">Spectre</property>
-    <property name="child">
-      <object class="GtkBox">
-        <child>
+    <property name="content">
+      <object class="AdwToolbarView">
+        <child type="top">
+          <object class="AdwHeaderBar" />
+        </child>
+        <property name="content">
           <object class="GtkBox">
-            <property name="hexpand">1</property>
-            <property name="halign">center</property>
-            <property name="valign">center</property>
-            <property name="margin-start">50</property>
-            <property name="margin-end">50</property>
-            <property name="margin-top">10</property>
-            <property name="margin-bottom">70</property>
-            <property name="orientation">vertical</property>
-            <property name="spacing">15</property>
             <child>
-              <object class="GtkLabel" id="identicon">
-                <attributes>
-                  <attribute name="size" value="40000"/>
-                </attributes>
-                <property name="width-request">250</property>
-                <property name="height-request">100</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="label" translatable="yes">Username</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkEntry" id="username">
-                <property name="has-frame">1</property>
-                <property name="placeholder-text" translatable="yes">Name</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkLabel">
-                <property name="label" translatable="yes">Master Password</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkEntry" id="masterpassword">
-                <property name="visibility">0</property>
-                <property name="has-frame">1</property>
-                <!-- <property name="primary-icon-activatable">0</property>
+              <object class="GtkBox">
+                <property name="hexpand">1</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="margin-start">50</property>
+                <property name="margin-end">50</property>
+                <property name="margin-top">10</property>
+                <property name="margin-bottom">70</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">15</property>
+                <child>
+                  <object class="GtkLabel" id="identicon">
+                    <attributes>
+                      <attribute name="size" value="40000" />
+                    </attributes>
+                    <property name="width-request">250</property>
+                    <property name="height-request">100</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Username</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="username">
+                    <property name="has-frame">1</property>
+                    <property name="placeholder-text" translatable="yes">Name</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Master Password</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="masterpassword">
+                    <property name="visibility">0</property>
+                    <property name="has-frame">1</property>
+                    <!-- <property name="primary-icon-activatable">0</property>
                 <property name="secondary-icon-activatable">0</property> -->
-                <!-- <property name="primary-icon-sensitive">0</property>
+                    <!-- <property name="primary-icon-sensitive">0</property>
                 <property name="secondary-icon-sensitive">0</property> -->
-                <property name="placeholder-text" translatable="yes">Password</property>
-                <property name="input-purpose">password</property>
+                    <property name="placeholder-text" translatable="yes">Password</property>
+                    <property name="input-purpose">password</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
-        </child>
+        </property>
       </object>
+
+
     </property>
-    <child type="titlebar">
+    <!-- <child type="titlebar">
       <object class="GtkHeaderBar">
 
       </object>
-    </child>
-  </object>
-  <object class="GtkApplicationWindow" id="password_window">
-    <child>
-      <object class="GtkBox">
-        <property name="halign">center</property>
-        <property name="valign">center</property>
-        <property name="margin-start">30</property>
-        <property name="margin-end">30</property>
-        <child>
-          <object class="GtkBox">
-            <property name="hexpand">1</property>
-            <property name="halign">center</property>
-            <property name="orientation">vertical</property>
-            <property name="homogeneous">1</property>
-            <child>
-              <object class="GtkBox">
-                <property name="vexpand">1</property>
-                <property name="halign">center</property>
-                <property name="valign">end</property>
-                <property name="orientation">vertical</property>
-                <child>
-                  <object class="GtkEntry" id="spectre_entry_big">
-                    <property name="vexpand">1</property>
-                    <property name="width-request">500</property>
-                    <property name="margin-bottom">35</property>
-                    <property name="input-purpose">name</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkTreeView" id="site_list">
-                <property name="reorderable">1</property>
-                <child internal-child="selection">
-                  <object class="GtkTreeSelection">
-                  </object>
-                </child>
-              </object>
-            </child>
-          </object>
-        </child>
-      </object>
-    </child>
+    </child> -->
   </object>
 </interface>

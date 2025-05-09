@@ -1,9 +1,9 @@
 use crate::model::g_site::*;
 use crate::spectre;
+use adw::prelude::*;
+use adw::subclass::prelude::*;
 use glib::subclass::Signal;
 use gtk::glib;
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
 use once_cell::sync::Lazy;
 use std::cell::{RefCell, RefMut};
 use std::env;
@@ -49,7 +49,7 @@ mod imp {
             use gtk::*;
             self.parent_constructed();
             let obj = self.obj();
-            obj.set_css_classes(&["view", "top", "bottom"]);
+            obj.set_css_classes(&["item", "bottom"]);
             obj.set_halign(Align::Center);
             obj.set_size_request(490, -1);
             obj.set_valign(Align::Start);

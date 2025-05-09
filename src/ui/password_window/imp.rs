@@ -1,3 +1,5 @@
+use adw::{ffi::AdwApplication, ApplicationWindow};
+
 use super::*;
 
 #[derive(Debug)]
@@ -16,7 +18,7 @@ pub struct PasswordWindow {
 impl ObjectSubclass for PasswordWindow {
     const NAME: &'static str = "PasswordWindow";
     type Type = super::PasswordWindow;
-    type ParentType = gtk::Window;
+    type ParentType = adw::Window;
 
     fn new() -> Self {
         Self {
@@ -66,7 +68,10 @@ impl ObjectImpl for PasswordWindow {
         sw.set_propagate_natural_height(true);
         let b = gtk::Box::new(gtk::Orientation::Vertical, 10);
         b.append(&sw);
-        self.obj().set_child(Some(&b));
+        let main_view = adw::ToolbarView::builder().content(&b).build();
+
+        main_view.add_top_bar(&adw::HeaderBar::builder().build());
+        self.obj().set_content(Some(&main_view));
     }
     fn dispose(&self) {
         //TODO unparent childs
@@ -87,3 +92,4 @@ impl WindowImpl for PasswordWindow {
         glib::Propagation::Proceed
     }
 }
+impl AdwWindowImpl for PasswordWindow {}

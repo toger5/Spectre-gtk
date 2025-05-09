@@ -1,16 +1,15 @@
 use crate::model::g_site::*;
 use crate::spectre;
+use adw::prelude::*;
+use adw::subclass::prelude::*;
 use gtk::gio;
 use gtk::glib;
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
 use gtk::Label;
 use std::cell::{RefCell, RefMut};
 use std::env;
 use std::rc::Rc;
 mod imp {
     use super::*;
-    // use gtk::subclass::prelude::*;
 
     #[derive(Debug, Default)]
     pub struct PasswordListBox {
@@ -58,7 +57,7 @@ mod imp {
         fn constructed(&self) {
             let obj = self.obj();
             self.parent_constructed();
-            obj.set_css_classes(&["view", "top", "bottom"]);
+            obj.set_css_classes(&["item"]);
             obj.set_halign(gtk::Align::Center);
             obj.set_size_request(450, -1);
             obj.set_valign(gtk::Align::Start);
@@ -111,7 +110,7 @@ mod imp {
             password_show_button.add_css_class("tiny");
             password_show_button.set_has_frame(false);
             password_show_button.connect_clicked(glib::clone!(@weak password_label, @weak password_show_button => move |_| {
-                let is_visible = gtk::prelude::EntryExt::is_visible(&password_label);
+                let is_visible = adw::prelude::EntryExt::is_visible(&password_label);
                 password_label.set_visibility(!is_visible);
                 if is_visible{
                     password_show_button.set_label("Hidden");
@@ -154,9 +153,11 @@ mod imp {
     impl WidgetImpl for PasswordListBox {}
     impl BoxImpl for PasswordListBox {}
 }
+
 glib::wrapper! {
     pub struct PasswordListBox(ObjectSubclass<imp::PasswordListBox>)
-    @extends gtk::Box, gtk::Widget, @implements gtk::ConstraintTarget, gtk::Orientable;
+    @extends gtk::Box, gtk::Widget,
+    @implements gtk::ConstraintTarget, gtk::Orientable;
 }
 
 impl PasswordListBox {

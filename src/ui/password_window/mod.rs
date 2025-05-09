@@ -5,24 +5,24 @@ use super::password_search_box::CopyButtonMode;
 use crate::model::g_site::{GSite, SiteDescriptor};
 use crate::spectre;
 use crate::ui::{password_list_box::PasswordListBox, password_search_box::PasswordSearchBox};
-use gtk::prelude::*;
-use gtk::subclass::prelude::*;
+use adw::prelude::*;
+use adw::subclass::prelude::*;
 use gtk::{glib, ListItem};
 mod imp;
 
 glib::wrapper! {
-    pub struct PasswordWindow(ObjectSubclass<imp::PasswordWindow>)
-    @extends gtk::Widget, gtk::Window, gtk::ApplicationWindow;
+pub struct PasswordWindow(ObjectSubclass<imp::PasswordWindow>)
+    @extends gtk::Widget, gtk::Window, adw::Window;
 }
 
 pub mod helper {
-    use gtk::prelude::*;
+    use adw::prelude::*;
     pub fn copy_to_clipboard_with_notification<T>(widget: &T, text: &str)
     where
         T: IsA<gtk::Widget>,
     {
         widget.clipboard().set_text(text);
-        let app = widget.root().unwrap().downcast::<gtk::Window>().ok().unwrap().application().unwrap();
+        let app = widget.root().unwrap().downcast::<adw::Window>().ok().unwrap().application().unwrap();
         let noti = gtk::gio::Notification::new("Password copied!");
         noti.set_body(Some("It can be pasted anywhere using Ctrl+V."));
         app.send_notification(Some("copy-notification"), &noti);
@@ -49,6 +49,7 @@ impl PasswordWindow {
         self_.list_view.set_model(Some(&model));
 
         let (user, user_key) = (self_.user.clone(), self_.user_key.clone());
+
         factory.connect_setup(glib::clone! {@weak self as self_clone @weak user, @weak user_key=>move |fact, item| {
             let stack = gtk::Stack::builder().vhomogeneous(false).build();
 
@@ -62,6 +63,7 @@ impl PasswordWindow {
 
             item.dynamic_cast_ref::<gtk::ListItem>().unwrap().set_child(Some(&stack));
         }});
+
         factory.connect_bind(glib::clone!(@weak self as self_clone => move |fact, item| {
             let (prop, search_box, list_box, stack) = PasswordWindow::parse_list_item(item.dynamic_cast_ref::<gtk::ListItem>().unwrap());
             let visible_child = if (prop.is_search()) {

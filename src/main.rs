@@ -18,12 +18,11 @@ use glib::{object::Object, GString, Variant};
 use std::fs::File;
 use std::path::Path;
 
-use libadwaita::prelude::*;
-use libadwaita::{ActionRow, Application, ApplicationWindow, HeaderBar};
+use adw::prelude::*;
+use adw::Application;
 
 use gtk::gdk;
-use gtk::prelude::*;
-use gtk::{glib, Builder, Button, ButtonsType, DialogFlags, Entry, Label, ListItem, MessageDialog, MessageType, Window};
+use gtk::{glib, Builder, Button, ButtonsType, DialogFlags, Entry, Label, ListItem, MessageDialog, MessageType};
 use pango;
 use std::time::SystemTime;
 
@@ -39,7 +38,7 @@ mod config;
 
 fn main() {
     // Current App
-    let windows: Rc<RefCell<HashMap<String, Window>>> = Rc::new(RefCell::new(HashMap::new()));
+    let windows: Rc<RefCell<HashMap<String, gtk::Window>>> = Rc::new(RefCell::new(HashMap::new()));
     let application = Application::new(Some("com.github.spectre"), Default::default());
     {
         let windows_clone = windows.clone();
@@ -81,17 +80,17 @@ fn load_custom_styling() {
     gtk::StyleContext::add_provider_for_display(&gtk::gdk::Display::default().unwrap(), &provider, 500);
 }
 
-fn build_ui(application: &libadwaita::Application, mut windows: Rc<RefCell<HashMap<String, Window>>>) {
+fn build_ui(application: &adw::Application, mut windows: Rc<RefCell<HashMap<String, gtk::Window>>>) {
     // const version: spectre::AlgorithmVersion = AlgorithmVersionDefault;
     const password_type: spectre::ResultType = spectre::ResultType::TemplateLong;
     let glade_src = include_str!("gtk_ui_files/windows.ui");
     let builder = Builder::from_string(glade_src);
 
     //login Window
-    let login_window: Window = builder.object("login_window").expect("Couldn't get login_window");
+    let login_window: gtk::Window = builder.object("login_window").expect("Couldn't get login_window");
     login_window.set_resizable(false);
     application.add_window(&login_window);
-    windows.borrow_mut().insert("login_window".to_owned(), login_window.clone());
+    windows.borrow_mut().insert("login_window".to_owned(), login_window.clone().upcast());
 
     // LOGIN UI
     let name_entry: Entry = builder.object("username").expect("Couldn't get username Entry");
@@ -128,7 +127,7 @@ fn build_ui(application: &libadwaita::Application, mut windows: Rc<RefCell<HashM
                     Ok(user_ok) => *user.borrow_mut() = Some(user_ok),
                     Err(err) => handle_file_marshal_read_error(err, &log_win)
                 }
-                login(user.clone(),&log_win,&name_entry,&spectre_entry,&application, windows.clone());
+                login(user.clone(), &log_win, &name_entry, &spectre_entry, &application, windows.clone());
             }else{
                 let dialog = gtk::MessageDialog::new(
                     Some(&log_win),
@@ -175,8 +174,8 @@ fn build_ui(application: &libadwaita::Application, mut windows: Rc<RefCell<HashM
         log_win: &gtk::Window,
         name_entry: &gtk::Entry,
         spectre_entry: &gtk::Entry,
-        application: &libadwaita::Application,
-        windows: Rc<RefCell<HashMap<String, Window>>>,
+        application: &adw::Application,
+        windows: Rc<RefCell<HashMap<String, gtk::Window>>>,
     ) {
         if let Some(_) = *user.borrow() {
             log_win.hide();
@@ -195,7 +194,7 @@ fn build_ui(application: &libadwaita::Application, mut windows: Rc<RefCell<HashM
             // pwd_win.fullscreen();
             // pwd_win.set_default_size(500,500);
             // pwd_win.set_resizable(false);
-            windows.borrow_mut().insert("pwd_window".to_owned(), pwd_window.clone().upcast::<gtk::Window>());
+            windows.borrow_mut().insert("pwd_window".to_owned(), pwd_window.clone().upcast());
             println!("{:?}", user.borrow().unwrap().userName);
         };
     }

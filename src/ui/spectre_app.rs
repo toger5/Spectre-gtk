@@ -1,8 +1,8 @@
-use gtk::prelude::*;
+use adw::prelude::*;
 use gtk::{gio, glib};
 use std::{cell::RefCell, env::args};
 
-use gtk::subclass::prelude::*;
+use adw::subclass::prelude::*;
 
 mod imp {
     use super::*;
@@ -27,7 +27,7 @@ mod imp {
             // *self.username.borrow_mut() = String::from("Firstname Lastname");
 
             // We create our window at activation stage
-            let window = gtk::ApplicationWindow::new(self.obj().as_ref());
+            let window = adw::ApplicationWindow::new(self.obj().as_ref());
             window.set_default_size(600, 350);
             window.set_title(Some("Spectre"));
 

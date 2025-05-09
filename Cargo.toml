@@ -17,7 +17,10 @@ num-derive = "0.2"
 pango = "0.9.1"
 libc = "0.2.91"
 
-libadwaita = "0.7.2"
+[dependencies.adw]
+package = "libadwaita"
+version = "0.7.2"
+features = ["v1_7"]
 
 [dependencies.gtk]
 package = "gtk4"
